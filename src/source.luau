@@ -2340,6 +2340,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Fatality:NewInput(ValueFrame,function()
 			Config.Default = not Config.Default;
 			toggleImg(Config.Default);
+			Config.Callback(Config.Default)
 		end);
 		
 		return Fatality:CreateResponse({
