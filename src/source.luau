@@ -143,7 +143,7 @@ Fatality.GLOBAL_ENVIRONMENT = {};
 Fatality.Windows = {};
 Fatality.FontSemiBold = Font.new('rbxasset://fonts/families/GothamSSm.json',Enum.FontWeight.SemiBold,Enum.FontStyle.Normal);
 Fatality.Flags = {};
-Fatality.Version = '1.0';
+Fatality.Version = '1.1';
 Fatality.Lucide = {
 	["lucide-accessibility"] = "rbxassetid://10709751939",
 	["lucide-activity"] = "rbxassetid://10709752035",
@@ -1001,7 +1001,7 @@ function Fatality:CreateHover(Element : Frame,Callback : (boolean) -> any)
 	Element.MouseEnter:Connect(function()
 		Callback(true);
 	end);
-	
+
 	Element.MouseLeave:Connect(function()
 		Callback(false);
 	end);
@@ -1027,7 +1027,7 @@ function Fatality:CreateAnimation(Instance: Instance , Time: number , Style : En
 			Style = nil;
 		end;
 	end;
-	
+
 	local Tween: Tween = TweenService:Create(Instance,TweenInfo.new(Time or 1 , Style or Enum.EasingStyle.Quint),Property);
 
 	Tween:Play();
@@ -1101,7 +1101,7 @@ end;
 
 function Fatality:CreateResponse(args: {[string] : (any) -> any})
 	local main = {};
-	
+
 	for i,v in next , args do
 		if typeof(v) == 'function' then
 			main[i] = function(self , ...)
@@ -1111,7 +1111,7 @@ function Fatality:CreateResponse(args: {[string] : (any) -> any})
 			main[i] = v;
 		end;
 	end;
-	
+
 	return main;
 end;
 
@@ -1135,7 +1135,7 @@ function Fatality:CreateOption(OptionButton: ImageButton): Elements
 			})
 		end;
 	end);
-	
+
 	local Bindable = Instance.new('BindableEvent');
 	local OwnWindow = Fatality:GetWindowFromElement(OptionButton);
 	local ExtElementFrame = Instance.new("Frame")
@@ -1145,9 +1145,9 @@ function Fatality:CreateOption(OptionButton: ImageButton): Elements
 	local ScrollingFrame = Instance.new("ScrollingFrame")
 	local UIListLayout = Instance.new("UIListLayout")
 	local SpaceBox = Instance.new("Frame")
-	
+
 	Fatality:ScrollSignal(ScrollingFrame,UIListLayout,'Y');
-	
+
 	ExtElementFrame.Active = true;
 	ExtElementFrame.Name = Fatality:RandomString()
 	ExtElementFrame.Parent = OwnWindow
@@ -1205,40 +1205,40 @@ function Fatality:CreateOption(OptionButton: ImageButton): Elements
 	SpaceBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	SpaceBox.BorderSizePixel = 0
 	SpaceBox.Size = UDim2.new(0, 0, 0, 3)
-	
+
 	local SPAWN_THREAD;
-	
+
 	local ToggleExt = function(bool)
 		if bool then
 			Bindable:SetAttribute('V',true);
 			Bindable:Fire(true);
-			
+
 			local size = math.clamp(UIListLayout.AbsoluteContentSize.Y + 15,0,200)
-			
+
 			ExtElementFrame.Position = UDim2.fromOffset(OptionButton.AbsolutePosition.X + 100, OptionButton.AbsolutePosition.Y + (size / 2))
-			
+
 			Fatality:CreateAnimation(ExtElementFrame,0.45,{
 				Size = UDim2.new(0, 200, 0, size)
 			})
-			
+
 			Fatality:CreateAnimation(DropShadow,0.45,{
 				ImageTransparency = 0.750
 			})
-			
+
 			Fatality:CreateAnimation(UIStroke,0.45,{
 				Transparency = 0
 			})
-			
+
 			if SPAWN_THREAD then
 				task.cancel(SPAWN_THREAD);
 				SPAWN_THREAD = nil;
 			end;
-			
+
 			SPAWN_THREAD = task.spawn(function()
 				while true do task.wait(0.1)
 					local size = math.clamp(UIListLayout.AbsoluteContentSize.Y + 15,0,200)
 					local ud = UDim2.fromOffset(OptionButton.AbsolutePosition.X + 100, OptionButton.AbsolutePosition.Y + (size / 2));
-					
+
 					Fatality:CreateAnimation(ExtElementFrame,0.35,{
 						Position = ud
 					});
@@ -1249,32 +1249,32 @@ function Fatality:CreateOption(OptionButton: ImageButton): Elements
 				task.cancel(SPAWN_THREAD);
 				SPAWN_THREAD = nil;
 			end;
-			
+
 			Bindable:SetAttribute('V',false);
 			Bindable:Fire(false);
-			
+
 			Fatality:CreateAnimation(ExtElementFrame,0.45,{
 				Size = UDim2.new(0, 200, 0, 0)
 			})
-			
+
 			Fatality:CreateAnimation(DropShadow,0.45,{
 				ImageTransparency = 1
 			})
-			
+
 			Fatality:CreateAnimation(UIStroke,0.45,{
 				Transparency = 1
 			})
 		end;
 	end;
-	
+
 	Bindable:SetAttribute('V',false);
-	
+
 	ToggleExt(false);
-	
+
 	OptionButton.MouseButton1Click:Connect(function()
 		ToggleExt(true);
 	end);
-	
+
 	UserInputService.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
 			if not Fatality:IsMouseOverFrame(ExtElementFrame) and not Fatality.GLOBAL_ENVIRONMENT.IS_HOLD_COLOR_PICKER then
@@ -1282,16 +1282,16 @@ function Fatality:CreateOption(OptionButton: ImageButton): Elements
 			end;
 		end;
 	end);
-	
+
 	local UIElements: Elements = Fatality:CreateElements(ScrollingFrame,ScrollingFrame.ZIndex,Bindable);
-	
+
 	return UIElements;
 end;
 
 function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 	Transparency = Transparency or 0;
 	Callback = Callback or function() end;
-	
+
 	local OwnWindow = Fatality:GetWindowFromElement(ColorBox);
 	local ColorPickerFrame = Instance.new("Frame")
 	local UICorner = Instance.new("UICorner")
@@ -1319,12 +1319,12 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 	local hexCode = Instance.new("Frame")
 	local UICorner_6 = Instance.new("UICorner")
 	local HexCodeText = Instance.new("TextLabel")
-	
+
 	local OldCode = 0;
 	local CodeH,CodeV = 1, 1;
 	local IsPressM1 = false;
 	local UI_SPAWN_THREAD;
-	
+
 	local updateColor = function()
 		local H , S , V = ColorBox.BackgroundColor3:ToHSV();
 
@@ -1332,23 +1332,23 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 		CodeH = S;
 		CodeV = V;
 	end;
-	
+
 	local VisibleToggle = function(value)
 		if value then
 			ColorPickBox.BackgroundColor3 = Color3.fromHSV(OldCode,1,1);
 			ColorOpc.BackgroundColor3 = ColorBox.BackgroundColor3;
-			
+
 			HexCodeText.Text = "#" .. tostring(ColorPickBox.BackgroundColor3:ToHex())
-			
+
 			ColorPickerFrame.Position = UDim2.fromOffset(ColorBox.AbsolutePosition.X + (ColorPickerFrame.AbsoluteSize.X / 1.5),ColorBox.AbsolutePosition.Y);
-			
+
 			updateColor();
-			
+
 			if UI_SPAWN_THREAD then
 				task.cancel(UI_SPAWN_THREAD);
 				UI_SPAWN_THREAD = nil;
 			end;
-			
+
 			UI_SPAWN_THREAD = task.spawn(function()
 				while true do task.wait()
 					Fatality:CreateAnimation(ColorPickerFrame,0.35,{
@@ -1356,11 +1356,11 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 					});
 				end;
 			end);
-			
+
 			Fatality:CreateAnimation(ColorRGBSlide,0.35,{
 				Position = UDim2.new(0.5, 0, OldCode, 0)
 			});
-			
+
 			Fatality:CreateAnimation(MouseMovement,0.35,{
 				Position = UDim2.new(CodeH, 0, 1 - CodeV, 0)
 			})
@@ -1368,72 +1368,72 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 			Fatality:CreateAnimation(ColorOptSlide,0.35,{
 				Position = UDim2.new(1- Transparency, 0, 0.5, 0)
 			})
-			
+
 			Fatality:CreateAnimation(ColorPickerFrame,0.45,{
 				Size = UDim2.new(0, 175, 0, 195),
 			});
-			
+
 			Fatality:CreateAnimation(UIStroke,0.45,{
 				Transparency = 0
 			});
-			
+
 			Fatality:CreateAnimation(DropShadow,0.45,{
 				ImageTransparency = 0.75
 			});
-			
+
 			Fatality:CreateAnimation(ColorPickBox,0.45,{
 				ImageTransparency = 0,
 				BackgroundTransparency = 0
 			});
-			
+
 			Fatality:CreateAnimation(MouseMovement,0.45,{
 				ImageTransparency = 0,
 			});
-			
+
 			Fatality:CreateAnimation(UIStroke_2,0.45,{
 				Transparency = 0
 			});
-			
+
 			Fatality:CreateAnimation(ColorRedGreenBlue,0.45,{
 				BackgroundTransparency = 0
 			});
-			
+
 			Fatality:CreateAnimation(ColorRGBSlide,0.45,{
 				BackgroundTransparency = 0
 			});
-			
+
 			Fatality:CreateAnimation(UIStroke_3,0.45,{
 				Transparency = 0.75
 			});
-			
+
 			Fatality:CreateAnimation(ColorOpc,0.45,{
 				BackgroundTransparency = 0
 			});
-			
+
 			Fatality:CreateAnimation(ColorOptSlide,0.45,{
 				BackgroundTransparency = 0
 			});
-			
+
 			Fatality:CreateAnimation(UIStroke_4,0.45,{
 				Transparency = 0.75
 			});
-			
+
 			Fatality:CreateAnimation(UIStroke_5,0.45,{
 				Transparency = 0
 			});
-			
+
 			Fatality:CreateAnimation(PasteButton,0.45,{
 				ImageTransparency = 0.45
 			});
-			
+
 			Fatality:CreateAnimation(CopyButton,0.45,{
 				ImageTransparency = 0.45
 			});
-			
+
 			Fatality:CreateAnimation(hexCode,0.45,{
 				BackgroundTransparency = 0.4
 			});
-			
+
 			Fatality:CreateAnimation(HexCodeText,0.45,{
 				TextTransparency = 0.45
 			});
@@ -1442,7 +1442,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 				task.cancel(UI_SPAWN_THREAD);
 				UI_SPAWN_THREAD = nil;
 			end;
-			
+
 			Fatality:CreateAnimation(ColorPickerFrame,0.45,{
 				Size = UDim2.new(0, 175, 0, 0)
 			});
@@ -1513,7 +1513,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 			});
 		end;
 	end;
-	
+
 	ColorPickerFrame.Active = true;
 	ColorPickerFrame.Name = Fatality:RandomString()
 	ColorPickerFrame.Parent = OwnWindow
@@ -1568,7 +1568,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 	MouseMovement.ZIndex = 205
 	MouseMovement.Image = "rbxassetid://4805639000"
 	MouseMovement.AnchorPoint = Vector2.new(0.5,0.5)
-	
+
 	UICorner_2.CornerRadius = UDim.new(0, 2)
 	UICorner_2.Parent = ColorPickBox
 
@@ -1707,7 +1707,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 	HexCodeText.TextSize = 13.000
 	HexCodeText.TextTransparency = 0.450
 	HexCodeText.TextXAlignment = Enum.TextXAlignment.Left;
-	
+
 	Fatality:CreateHover(CopyButton,function(bool)
 		if bool then
 			Fatality:CreateAnimation(CopyButton,0.45,{
@@ -1719,7 +1719,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 			})
 		end
 	end)	
-	
+
 	Fatality:CreateHover(PasteButton,function(bool)
 		if bool then
 			Fatality:CreateAnimation(PasteButton,0.45,{
@@ -1731,19 +1731,19 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 			})
 		end
 	end)
-	
+
 	PasteButton.MouseButton1Click:Connect(function()
 		if Fatality.GLOBAL_ENVIRONMENT.COLOR_COPY then
 			local h,s,v = Fatality.GLOBAL_ENVIRONMENT.COLOR_COPY.RGB:ToHSV();
-			
+
 			Transparency = Fatality.GLOBAL_ENVIRONMENT.COLOR_COPY.OPC;
-			
+
 			OldCode = h;
 			CodeH = s;
 			CodeV = v;
-			
+
 			HexCodeText.Text = "#" .. tostring(Fatality.GLOBAL_ENVIRONMENT.COLOR_COPY.RGB:ToHex());
-			
+
 			Fatality:CreateAnimation(ColorRGBSlide,0.35,{
 				Position = UDim2.new(0.5, 0, OldCode, 0)
 			});
@@ -1759,41 +1759,41 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 			Fatality:CreateAnimation(ColorPickerFrame,0.45,{
 				Size = UDim2.new(0, 175, 0, 195),
 			});
-			
+
 			ColorPickBox.BackgroundColor3 = Color3.fromHSV(h,1,1);
-			
+
 			ColorOpc.BackgroundColor3 = Fatality.GLOBAL_ENVIRONMENT.COLOR_COPY.RGB;
-			
+
 			Callback(Color3.fromHSV(OldCode,CodeH,CodeV),Transparency);
 		end;
 	end);
-	
+
 	CopyButton.MouseButton1Click:Connect(function()
 		Fatality.GLOBAL_ENVIRONMENT.COLOR_COPY = {
 			RGB = Color3.fromHSV(OldCode,CodeH,CodeV),
 			OPC = Transparency,
 		};
 	end)
-	
+
 	VisibleToggle(false);
-	
+
 	Fatality:NewInput(ColorBox,function()
 		VisibleToggle(true);
 	end);
-	
+
 	do
 		local SPAWN_THREAD;
 		ColorPickerFrame.InputBegan:Connect(function(Input)
 			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
 				IsPressM1 = true;
-				
+
 				Fatality.GLOBAL_ENVIRONMENT.IS_HOLD_COLOR_PICKER = true;
-				
+
 				if SPAWN_THREAD then
 					task.cancel(SPAWN_THREAD);
 					SPAWN_THREAD = nil;
 				end;
-				
+
 				SPAWN_THREAD = task.spawn(function()
 					while IsPressM1 do task.wait(0)
 						Callback(Color3.fromHSV(OldCode,CodeH,CodeV),Transparency);
@@ -1806,7 +1806,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
 				IsPressM1 = false;
 				Fatality.GLOBAL_ENVIRONMENT.IS_HOLD_COLOR_PICKER = false;
-				
+
 				if SPAWN_THREAD then
 					task.cancel(SPAWN_THREAD);
 					SPAWN_THREAD = nil;
@@ -1833,15 +1833,15 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 					local Code = ((Value - ColorY) / (ColorYM - ColorY));
 
 					local Color = Color3.fromHSV(Code, CodeH, CodeV);
-				
+
 					Fatality:CreateAnimation(ColorRGBSlide,0.35,{
 						Position = UDim2.new(0.5, 0, Code, 0)
 					});
-					
+
 					Fatality:CreateAnimation(ColorBox,0.5,{
 						BackgroundColor3 = Color
 					});
-					
+
 					Fatality:CreateAnimation(ColorOpc,0.35,{
 						BackgroundColor3 = Color
 					});
@@ -1849,14 +1849,14 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 					Fatality:CreateAnimation(ColorPickBox,0.5,{
 						BackgroundColor3 = Color3.fromHSV(Code, 1, 1)
 					});
-					
+
 					HexCodeText.Text = "#" .. tostring(Color:ToHex())
-					
+
 					OldCode = Code;
 				end;
 			end;
 		end);
-		
+
 		ColorOpc.InputBegan:Connect(function(Input)
 			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
 				IsPressM1 = true;
@@ -1867,9 +1867,9 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 					Fatality:CreateAnimation(ColorOptSlide,0.35,{
 						Position = UDim2.new(transparency, 0, 0.5, 0)
 					});
-					
+
 					HexCodeText.Text = "#" .. tostring(ColorBox.BackgroundColor3:ToHex())
-					
+
 					Transparency = (1 - transparency);
 				end;
 			end;
@@ -1892,11 +1892,11 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 					Fatality:CreateAnimation(ColorBox,0.5,{
 						BackgroundColor3 = Color3.fromHSV(OldCode, CodeH, CodeV)
 					});
-					
+
 					Fatality:CreateAnimation(ColorOpc,0.35,{
 						BackgroundColor3 = Color3.fromHSV(OldCode, CodeH, CodeV)
 					});
-					
+
 					HexCodeText.Text = "#" .. tostring(Color3.fromHSV(OldCode, CodeH, CodeV):ToHex())
 
 					Fatality:CreateAnimation(MouseMovement,0.2,nil,{
@@ -1906,7 +1906,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 			end
 		end)
 	end;
-	
+
 	return {
 		set_opc = function(v)
 			Transparency = v;
@@ -1916,27 +1916,27 @@ end;
 
 function Fatality:RandomStr(len: number): string
 	local main = "";
-	
+
 	for i = 1 , len do
 		local max = #Fatality.Ascii;
 		local rand = math.random(1,max);
-		
+
 		main = main .. Fatality.Ascii:sub(rand,rand);
 	end;
-	
+
 	return main;
 end;
 
 function Fatality:ProtectText(Label: TextLabel,Text: string)
 	Label.RichText = true;
-	
+
 	local MainText = string.gsub(Text,'.',function(t)
 		if not string.find(t,"[<>()\"']") then
 			return string.format('<font %s="%s">%s</font>',Fatality:RandomStr(5),Fatality:RandomStr(5),t)
 		end;
 		return t;
 	end);
-	
+
 	Label.Text = MainText;
 end;
 
@@ -1944,7 +1944,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 	local Window = Fatality:GetWindowFromElement(Parent);
 	local Data = {};
 	local Selected = (Multiplier and {}) or nil;
-	
+
 	local DropdownItemFrame = Instance.new("Frame")
 	local UICorner = Instance.new("UICorner")
 	local UIStroke = Instance.new("UIStroke")
@@ -1952,18 +1952,18 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 	local ScrollingFrame = Instance.new("ScrollingFrame")
 	local UIListLayout = Instance.new("UIListLayout")
 	local SPAWN_THREAD;
-	
+
 	local Toggle = function(value)
 		if value then
 			if SPAWN_THREAD then
 				task.cancel(SPAWN_THREAD);
 				SPAWN_THREAD = nil;
 			end;
-			
+
 			SPAWN_THREAD = task.spawn(function()
 				while true do task.wait()
 					local baseSize = UIListLayout.AbsoluteContentSize.Y + 10;
-					
+
 					DropdownItemFrame.Position = UDim2.fromOffset(Parent.AbsolutePosition.X,Parent.AbsolutePosition.Y + (Parent.AbsoluteSize.Y * 5))
 
 					Fatality:CreateAnimation(DropdownItemFrame,0.35,{
@@ -1971,11 +1971,11 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 					})
 				end;
 			end)
-			
+
 			Fatality:CreateAnimation(UIStroke,0.35,{
 				Transparency = 0
 			})
-			
+
 			Fatality:CreateAnimation(DropShadow,0.35,{
 				ImageTransparency = 0.75
 			})
@@ -1984,7 +1984,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 				task.cancel(SPAWN_THREAD);
 				SPAWN_THREAD = nil;
 			end;
-			
+
 			Fatality:CreateAnimation(DropdownItemFrame,0.35,{
 				Size = UDim2.new(0, 175, 0, 0)
 			})
@@ -1998,9 +1998,9 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 			})
 		end;
 	end;
-	
+
 	Toggle(false);
-	
+
 	DropdownItemFrame.Name = Fatality:RandomString()
 	DropdownItemFrame.Parent = Window
 	DropdownItemFrame.AnchorPoint = Vector2.new(0, 0)
@@ -2049,11 +2049,11 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 	UIListLayout.Parent = ScrollingFrame
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	UIListLayout.Padding = UDim.new(0, 5)
-	
+
 	UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 		ScrollingFrame.CanvasSize = UDim2.fromOffset(0,UIListLayout.AbsoluteContentSize.Y + 4)
 	end)
-	
+
 	local new_button = function()
 		local db_selected = Instance.new("TextButton")
 
@@ -2068,10 +2068,10 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 		db_selected.TextColor3 = Color3.fromRGB(255, 106, 133)
 		db_selected.TextSize = 12.000
 		db_selected.TextXAlignment = Enum.TextXAlignment.Left
-		
+
 		return db_selected;
 	end;
-	
+
 	local func;
 	local res = Fatality:CreateResponse({
 		set_data = function(v)
@@ -2086,16 +2086,16 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 					v:Destroy();
 				end;
 			end;
-			
+
 			local selectedmem;
-			
+
 			for i,v in next , Data do
 				local bth = new_button();
 
 				bth.Text = tostring(v);
 
 				bth.Parent = ScrollingFrame;
-				
+
 				if Multiplier then
 					if (typeof(Default) == 'table' and (Default[v] or table.find(Default,v))) or Default == v then
 						Selected[v] = true
@@ -2104,7 +2104,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 						bth.TextColor3 = Color3.fromRGB(255, 255, 255);
 						Selected[v] = false
 					end
-					
+
 					bth.MouseButton1Click:Connect(function()
 						Selected[v] = not Selected[v];
 
@@ -2120,39 +2120,39 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 					if v == Default then
 						selectedmem = bth;
 						Selected = v;
-						
+
 						bth.TextColor3 = Color3.fromRGB(255, 106, 133);
 					else
 						bth.TextColor3 = Color3.fromRGB(255, 255, 255);
 					end;
-					
+
 					bth.MouseButton1Click:Connect(function()
 						if selectedmem then
 							selectedmem.TextColor3 = Color3.fromRGB(255, 255, 255);
 						end;
-						
+
 						bth.TextColor3 = Color3.fromRGB(255, 106, 133);
 						selectedmem = bth;
 						Selected = v;
-						
+
 						Callback(v);
 					end)
 				end;
 			end;
-			
+
 			Callback(Selected);
 		end,
 	});
-	
+
 	Fatality:NewInput(Parent,function()
 		if AutoUpdate then
 			res:refresh();
 		end;
-		
+
 		func(true);
 		Toggle(true);
 	end);
-	
+
 	UserInputService.InputBegan:Connect(function(Input)
 		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
 			if not Fatality:IsMouseOverFrame(DropdownItemFrame) then
@@ -2161,13 +2161,13 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 			end;
 		end;
 	end);
-	
+
 	return res;
 end;
 
 function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : BindableEvent) : Elements
 	local elements = {};
-	
+
 	function elements:AddToggle(Config: Toggle)
 		Config = Config or {};
 		Config.Name = Config.Name or "Toggle";
@@ -2175,7 +2175,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Config.Risky = Config.Risky or false;
 		Config.Option = Config.Option or false;
 		Config.Callback = Config.Callback or function(bool) end;
-		
+
 		local Toggle = Instance.new("Frame")
 		local Toggle_Name = Instance.new("TextLabel")
 		local ValueFrame = Instance.new("Frame")
@@ -2207,7 +2207,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Toggle_Name.TextSize = 13.000
 		Toggle_Name.TextTransparency = 1
 		Toggle_Name.TextXAlignment = Enum.TextXAlignment.Left;
-		
+
 		Fatality:ProtectText(Toggle_Name,Config.Name);
 
 		ValueFrame.Name = Fatality:RandomString()
@@ -2221,7 +2221,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ValueFrame.SizeConstraint = Enum.SizeConstraint.RelativeYY
 		ValueFrame.ZIndex = ZIndex + 2
 		ValueFrame.BackgroundTransparency = 1;
-		
+
 		UICorner.CornerRadius = UDim.new(0, 2)
 		UICorner.Parent = ValueFrame
 
@@ -2237,7 +2237,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ValueIcon.ZIndex = ZIndex + 2
 		ValueIcon.Image = "rbxassetid://10709790644"
 		ValueIcon.ImageTransparency = 1;
-		
+
 		OptionButton.Name = Fatality:RandomString()
 		OptionButton.Parent = Toggle
 		OptionButton.AnchorPoint = Vector2.new(1, 0.5)
@@ -2252,7 +2252,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		OptionButton.ImageTransparency = 1
 		OptionButton.ZIndex = ZIndex + 4
 		OptionButton.Visible = Config.Option;
-		
+
 		local toggleImg = function(value)
 			if value then
 				Fatality:CreateAnimation(ValueIcon,0.45,{
@@ -2270,23 +2270,23 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				})
 			end;
 		end;
-		
+
 		local OpcToggle = function(value)
 			if value then
 				Fatality:CreateAnimation(ValueIcon,0.45,{
 					ImageTransparency = 1,
 				})
-				
+
 				Fatality:CreateAnimation(OptionButton,0.45,{
 					ImageTransparency = (Config.Option and 0.600) or 1
 				})
-				
+
 				toggleImg(Config.Default)
-				
+
 				Fatality:CreateAnimation(ValueFrame,0.45,{
 					BackgroundTransparency = 0,
 				})
-				
+
 				Fatality:CreateAnimation(Toggle_Name,0.45,{
 					TextTransparency = 0.200
 				})
@@ -2294,29 +2294,29 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				Fatality:CreateAnimation(Toggle_Name,0.45,{
 					TextTransparency = 1
 				})
-				
+
 				Fatality:CreateAnimation(ValueFrame,0.45,{
 					BackgroundTransparency = 1,
 				})
-				
+
 				Fatality:CreateAnimation(ValueIcon,0.45,{
 					ImageTransparency = 1,
 				})
-				
+
 				Fatality:CreateAnimation(ValueIcon,0.45,{
 					ImageTransparency = 1,
 				})
-				
+
 				Fatality:CreateAnimation(OptionButton,0.45,{
 					ImageTransparency = 1
 				})
 			end;
 		end;
-		
+
 		OpcToggle(Event:GetAttribute('V'))
-		
+
 		toggleImg(Config.Default);
-		
+
 		Fatality:CreateHover(ValueFrame,function(b)
 			if not Config.Default then
 				if b then
@@ -2336,13 +2336,13 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				end;
 			end;
 		end)
-		
+
 		Fatality:NewInput(ValueFrame,function()
 			Config.Default = not Config.Default;
 			toggleImg(Config.Default);
 			Config.Callback(Config.Default)
 		end);
-		
+
 		return Fatality:CreateResponse({
 			Rename = function(new_name)
 				Toggle_Name.Text = new_name;
@@ -2351,13 +2351,13 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			Signal = Event.Event:Connect(OpcToggle),
 			SetValue = function(v)
 				Config.Default = v;
-				
+
 				toggleImg(Config.Default);
 			end,
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
 		})
 	end;
-	
+
 	function elements:AddSlider(Config: Slider)
 		Config = Config or {};
 		Config.Name = Config.Name or "Slider";
@@ -2432,7 +2432,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		OptionButton.ImageTransparency = 0.600
 		OptionButton.Visible = Config.Option;
 		OptionButton.ZIndex = ZIndex + 1;
-		
+
 		boxli.Name = Fatality:RandomString()
 		boxli.Parent = ValueFrame
 		boxli.BackgroundColor3 = Color3.fromRGB(255, 106, 133)
@@ -2458,7 +2458,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ValueText.TextSize = 9.000
 		ValueText.TextStrokeTransparency = 0.850;
 		ValueText.TextTransparency = 0;
-		
+
 		local OpcToggle = function(value)
 			if value then
 				Fatality:CreateAnimation(boxli,0.45,{
@@ -2476,7 +2476,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				Fatality:CreateAnimation(Slider_Name,0.45,{
 					TextTransparency = 0.200
 				})
-				
+
 				Fatality:CreateAnimation(ValueText,0.45,{
 					TextStrokeTransparency = 0.850,
 					TextTransparency = 0;
@@ -2486,7 +2486,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 					TextStrokeTransparency = 1,
 					TextTransparency = 1;
 				})
-				
+
 				Fatality:CreateAnimation(Slider_Name,0.45,{
 					TextTransparency = 1
 				})
@@ -2506,7 +2506,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		end;
 
 		OpcToggle(Event:GetAttribute('V'))
-		
+
 		local IsHold = false;
 
 		local function update(Input)
@@ -2525,7 +2525,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 			Config.Callback(Value)
 		end;
-		
+
 		do
 			ValueFrame.InputBegan:Connect(function(Input)
 				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
@@ -2581,13 +2581,13 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
 		})
 	end;
-	
+
 	function elements:AddButton(Config: Button)
 		Config = Config or {};
 		Config.Name = Config.Name or "Slider";
 		Config.Risky = Config.Risky or false;
 		Config.Callback = Config.Callback or function() end;
-		
+
 		local Button = Instance.new("Frame")
 		local Button_Name = Instance.new("TextLabel")
 		local UICorner = Instance.new("UICorner")
@@ -2616,16 +2616,16 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Button_Name.TextSize = 12.000
 		Button_Name.TextTransparency = 0.400
 		Fatality:ProtectText(Button_Name,Config.Name);
-		
+
 		UICorner.CornerRadius = UDim.new(0, 2)
 		UICorner.Parent = Button;
-		
+
 		local OpcToggle = function(value)
 			if value then
 				Fatality:CreateAnimation(Button_Name,0.45,{
 					TextTransparency = 0.4,
 				})
-				
+
 				Fatality:CreateAnimation(Button,0.45,{
 					BackgroundTransparency = 0,
 				})
@@ -2641,7 +2641,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		end;
 
 		OpcToggle(Event:GetAttribute('V'));
-		
+
 		Fatality:CreateHover(Button,function(value)
 			if value then
 				Fatality:CreateAnimation(Button,0.45,{
@@ -2653,11 +2653,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				})
 			end;
 		end)
-		
+
 		Fatality:NewInput(Button,function()
 			Config.Callback();
 		end)
-		
+
 		return Fatality:CreateResponse({
 			Rename = function(new_name)
 				Button_Name.Text = new_name
@@ -2667,7 +2667,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			Fire = Config.Callback,
 		})
 	end;
-	
+
 	function elements:AddColorPicker(Config: ColorPicker)
 		Config = Config or {};
 		Config.Name = Config.Name or "Color Picker";
@@ -2675,7 +2675,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Config.Default = Config.Default or Color3.fromRGB(255, 255, 255);
 		Config.Callback = Config.Callback or function(number) end;
 		Config.Transparency = Config.Transparency or 0;
-		
+
 		local ColorPicker = Instance.new("Frame")
 		local ColorPicker_Name = Instance.new("TextLabel")
 		local ValueFrame = Instance.new("Frame")
@@ -2708,7 +2708,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ColorPicker_Name.TextTransparency = 0.200
 		ColorPicker_Name.TextXAlignment = Enum.TextXAlignment.Left
 		ColorPicker_Name.ZIndex = ZIndex + 2
-		
+
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = ColorPicker
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
@@ -2735,20 +2735,20 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		OptionButton.Image = "http://www.roblox.com/asset/?id=14007344336"
 		OptionButton.ImageTransparency = 0.600
 		OptionButton.ZIndex = 7;
-		
+
 		local res = Fatality:CreateColorPicker(ValueFrame,Config.Transparency,function(rgb,opc)
 			ValueFrame.BackgroundColor3 = rgb;
 			ValueFrame.BackgroundTransparency = opc;
-			
+
 			task.spawn(Config.Callback,rgb,opc)
 		end);
-		
+
 		local OpcToggle = function(value)
 			if value then
 				Fatality:CreateAnimation(ColorPicker_Name,0.45,{
 					TextTransparency = 0.2,
 				})
-				
+
 				Fatality:CreateAnimation(ValueFrame,0.45,{
 					Size = UDim2.new(0, 35, 0.7, 0)
 				})
@@ -2772,7 +2772,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		end;
 
 		OpcToggle(Event:GetAttribute('V'));
-		
+
 		return Fatality:CreateResponse({
 			Rename = function(new_name)
 				ColorPicker.Text = new_name
@@ -2786,7 +2786,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
 		})
 	end;
-	
+
 	function elements:AddDropdown(Config: Dropdown)
 		Config = Config or {};
 		Config.Name = Config.Name or "Dropdown";
@@ -2795,7 +2795,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Config.Callback = Config.Callback or function(any) end;
 		Config.Values = Config.Values or {};
 		Config.Multi = Config.Multi or false;
-		
+
 		local DataParser = function(value)
 			if not value then return 'None'; end;
 
@@ -2827,7 +2827,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 			return Out;
 		end;
-		
+
 		local Dropdown = Instance.new("Frame")
 		local Dropdown_Name = Instance.new("TextLabel")
 		local ValueFrame = Instance.new("Frame")
@@ -2863,7 +2863,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Dropdown_Name.TextXAlignment = Enum.TextXAlignment.Left
 		Dropdown_Name.ZIndex = ZIndex + 4
 		Fatality:ProtectText(Dropdown_Name,Config.Name);
-		
+
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = Dropdown
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
@@ -2891,7 +2891,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		OptionButton.ImageTransparency = 0.600
 		OptionButton.ZIndex = 8
 		OptionButton.Visible = Config.Option;
-		
+
 		icon.Name = Fatality:RandomString()
 		icon.Parent = ValueFrame
 		icon.AnchorPoint = Vector2.new(1, 0)
@@ -2924,18 +2924,18 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Value_Text.TextYAlignment = Enum.TextYAlignment.Top
 		Value_Text.TextWrapped = true
 		Value_Text.TextTruncate = Enum.TextTruncate.SplitWord
-		
+
 		local res;
 		res = Fatality:CreateDropdown(ValueFrame,Config.Default,Config.Multi,Config.AutoUpdate,function(args)
 			Config.Default = args;
 			Value_Text.Text = DataParser(Config.Default);
-			
+
 			Config.Callback(args);
 		end);
-		
+
 		res:set_data(Config.Values);
 		res:refresh();
-		
+
 		res:on_toggle(function(b)
 			if b then
 				Fatality:CreateAnimation(icon,0.35,{
@@ -2949,7 +2949,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				})
 			end;
 		end);
-		
+
 		local OpcToggle = function(value)
 			if value then
 				Fatality:CreateAnimation(Dropdown_Name,0.45,{
@@ -2959,11 +2959,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				Fatality:CreateAnimation(ValueFrame,0.45,{
 					BackgroundTransparency = 0
 				})
-				
+
 				Fatality:CreateAnimation(icon,0.45,{
 					ImageTransparency = 0
 				})
-				
+
 				Fatality:CreateAnimation(Value_Text,0.45,{
 					TextTransparency = 0.5
 				})
@@ -3016,14 +3016,14 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
 		})
 	end;
-	
+
 	function elements:AddKeybind(Config: Keybind)
 		Config = Config or {};
 		Config.Name = Config.Name or "Keybind";
 		Config.Option = Config.Option or false;
 		Config.Default = Config.Default or nil;
 		Config.Callback = Config.Callback or function(any) end;
-		
+
 		local Keys = {
 			One = '1',
 			Two = '2',
@@ -3067,7 +3067,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				return 'None';
 			end;
 		end;
-		
+
 		local Keybind = Instance.new("Frame")
 		local Keybind_Name = Instance.new("TextLabel")
 		local ValueFrame = Instance.new("Frame")
@@ -3101,7 +3101,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Keybind_Name.TextTransparency = 0.200
 		Keybind_Name.TextXAlignment = Enum.TextXAlignment.Left
 		Fatality:ProtectText(Keybind_Name,Config.Name);
-		
+
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = Keybind
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
@@ -3127,7 +3127,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		OptionButton.SizeConstraint = Enum.SizeConstraint.RelativeYY
 		OptionButton.Image = "http://www.roblox.com/asset/?id=14007344336"
 		OptionButton.ImageTransparency = 0.600
-		
+
 		ValueText.Name = Fatality:RandomString()
 		ValueText.Parent = ValueFrame
 		ValueText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -3142,7 +3142,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ValueText.TextSize = 9.000
 		ValueText.TextStrokeTransparency = 0.850
 		ValueText.TextTransparency = 0.400
-		
+
 		local IsBinding = false;
 		Fatality:NewInput(ValueFrame,function()
 			if IsBinding then
@@ -3174,7 +3174,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 			Config.Callback(typeof(Selected) == "string" and Selected or Selected.Name);
 		end);
-		
+
 		local OpcToggle = function(value)
 			if value then
 				Fatality:CreateAnimation(Keybind_Name,0.45,{
@@ -3184,7 +3184,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				Fatality:CreateAnimation(ValueFrame,0.45,{
 					BackgroundTransparency = 0
 				})
-				
+
 				Fatality:CreateAnimation(ValueText,0.45,{
 					TextStrokeTransparency = 0.850,
 					TextTransparency = 0.400
@@ -3228,7 +3228,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
 		})
 	end;
-	
+
 	return elements;
 end;
 
@@ -3238,13 +3238,14 @@ function Fatality.new(Window: Window)
 	Window.Scale = Window.Scale or UDim2.new(0, 750, 0, 500);
 	Window.Keybind = Window.Keybind or "Insert";
 	Window.Expire = Window.Expire or "never";
-	
+
 	local Fatal = {
 		Menus = {},
 		MenuSelected = nil,
-		Toggle = true
+		Toggle = true,
+		Signal = Instance.new('BindableEvent');
 	};
-	
+
 	local Fatalitywin = Instance.new("ScreenGui")
 	local FatalFrame = Instance.new("Frame")
 	local UICorner = Instance.new("UICorner")
@@ -3272,60 +3273,230 @@ function Fatality.new(Window: Window)
 	local HeaderLineShadow_2 = Instance.new("Frame")
 	local UIGradient_2 = Instance.new("UIGradient")
 	local UICorner_6 = Instance.new("UICorner")
+	local InfoButton = Instance.new("ImageButton")
+	local SearchButton = Instance.new("ImageButton")
+	local SaveButton = Instance.new("ImageButton")
 	
 	Fatality:ScrollSignal(tbc,UIListLayout,'X');
 	
+	FatalFrame:GetPropertyChangedSignal("BackgroundTransparency"):Connect(function()
+		if FatalFrame.BackgroundTransparency >= 0.99 then
+			Fatalitywin.Enabled = false;
+		else
+			Fatalitywin.Enabled = true;
+		end;
+	end);
 	
-	local First = true
 	local ToggleUI = function(bool)
+		Fatal.Signal:Fire(bool);
+		
 		if bool then
-			if First then
-				Fatality:CreateAnimation(FatalFrame,0.45,{
-					Position = UDim2.fromScale(0.5,0.5)
-				})
-				
-				First = false;
+			for i,v in next , Fatal.Menus do
+				v.ValueSelect(false);
 			end;
 			
-			Fatality:CreateAnimation(FatalFrame,0.5,{
-				Size = Window.Scale
+			if Fatal.MenuSelected then
+				Fatal.MenuSelected.ValueSelect(true)
+			end
+			
+			Fatality:CreateAnimation(FatalFrame,0.15,{
+				Size = Window.Scale,
+				BackgroundTransparency = 0,
 			})
 			
-			Fatalitywin.Enabled = true;
+			Fatality:CreateAnimation(Header,0.5,{
+				BackgroundTransparency = 0,
+			})
+			
+			Fatality:CreateAnimation(HeaderLine,0.5,{
+				BackgroundTransparency = 0,
+			})
+			
+			Fatality:CreateAnimation(Bottom,0.5,{
+				BackgroundTransparency = 0,
+			})
+			
+			Fatality:CreateAnimation(HeaderLine_2,0.5,{
+				BackgroundTransparency = 0,
+			})
+			
+			Fatality:CreateAnimation(HeaderLineShadow,0.5,{
+				BackgroundTransparency = 0.5,
+			})
+			
+			Fatality:CreateAnimation(HeaderLineShadow_2,0.5,{
+				BackgroundTransparency = 0.5,
+			})
+			
+			--Fatalitywin.Enabled = true;
+			
+			Fatality:CreateAnimation(InfoButton,0.35,{
+				ImageTransparency = 0.5
+			})
+			
+			Fatality:CreateAnimation(SearchButton,0.35,{
+				ImageTransparency = 0.5
+			})
+			
+			Fatality:CreateAnimation(SaveButton,0.35,{
+				ImageTransparency = 0.5
+			})
+			
+			Fatality:CreateAnimation(HeaderText,0.35,{
+				TextStrokeTransparency = 0.640,
+				TextTransparency = 0
+			})
+			
+			Fatality:CreateAnimation(UserIcon,0.45,{
+				ImageTransparency = 0,
+				Position = UDim2.new(1, -10,0.5, 0)
+			})
+			
+			Fatality:CreateAnimation(User_name,0.35,{
+				TextTransparency = 0,
+				Position = UDim2.new(1, -40,0, 3)
+			})
+			
+			Fatality:CreateAnimation(expire_days,0.5,{
+				TextTransparency = 0,
+				Position = UDim2.new(1, -40,0, 16)
+			})
+			
+			Fatality:CreateAnimation(UIStroke,0.35,{
+				Thickness = 2.500,
+				Transparency = 0.900
+			})
+			
+			task.delay(0.3,function()
+				if Fatal.Toggle then
+					Fatality:CreateAnimation(InfoButton,0.65,Enum.EasingStyle.Back,{
+						Position = UDim2.new(1, -5,0.5, 0)
+					})
+
+					Fatality:CreateAnimation(SearchButton,0.35,Enum.EasingStyle.Back,{
+						Position = UDim2.new(0,10,0.5, 0)
+					})
+
+					Fatality:CreateAnimation(SaveButton,0.45,Enum.EasingStyle.Back,{
+						Position = UDim2.new(0,35,0.5, 0)
+					})
+				end;
+			end)
 			
 			Fatality:CreateAnimation(DropShadow,0.35,{
 				ImageTransparency = 0.75
 			})
 		else
-			Fatalitywin.Enabled = false;
+			for i,v in next , Fatal.Menus do
+				v.ValueSelect(false);
+			end;
+			
+			--Fatalitywin.Enabled = false;
+			
+			Fatality:CreateAnimation(SaveButton,0.35,{
+				Position = UDim2.new(0,35,1, 20)
+			})
+			
+			Fatality:CreateAnimation(SearchButton,0.35,{
+				Position = UDim2.new(0,10,1, 20)
+			})
+			
+			Fatality:CreateAnimation(InfoButton,0.35,{
+				Position = UDim2.new(1, -5,1, 20)
+			})
+			
+			Fatality:CreateAnimation(UIStroke,0.35,{
+				Thickness = 0,
+				Transparency = 1
+			})
+			
+			Fatality:CreateAnimation(UserIcon,0.35,{
+				ImageTransparency = 1,
+				Position = UDim2.new(1, 210,0.5, 0)
+			})
 
+			Fatality:CreateAnimation(User_name,0.35,{
+				TextTransparency = 1,
+				Position = UDim2.new(1, 200,0, 3)
+			})
+
+			Fatality:CreateAnimation(expire_days,0.1,{
+				TextTransparency = 1,
+				Position = UDim2.new(1, 200,0, 16)
+			})
+			
+			Fatality:CreateAnimation(HeaderText,0.35,{
+				TextStrokeTransparency = 1,
+				TextTransparency = 1
+			})
+			
+			Fatality:CreateAnimation(HeaderLineShadow_2,0.5,{
+				BackgroundTransparency = 1,
+			})
+			
+			Fatality:CreateAnimation(InfoButton,0.35,{
+				ImageTransparency = 1
+			})
+
+			Fatality:CreateAnimation(SearchButton,0.35,{
+				ImageTransparency = 1
+			})
+
+			Fatality:CreateAnimation(SaveButton,0.35,{
+				ImageTransparency = 1
+			})
+			
+			Fatality:CreateAnimation(HeaderLineShadow,0.5,{
+				BackgroundTransparency = 1,
+			})
+			
+			Fatality:CreateAnimation(FatalFrame,0.75,{
+				BackgroundTransparency = 1,
+			})
+
+			Fatality:CreateAnimation(Header,0.5,{
+				BackgroundTransparency = 1,
+			})
+
+			Fatality:CreateAnimation(HeaderLine,0.5,{
+				BackgroundTransparency = 1,
+			})
+
+			Fatality:CreateAnimation(Bottom,0.5,{
+				BackgroundTransparency = 1,
+			})
+
+			Fatality:CreateAnimation(HeaderLine_2,0.5,{
+				BackgroundTransparency = 1,
+			})
+			
 			Fatality:CreateAnimation(DropShadow,0.35,{
 				ImageTransparency = 1
 			})
 		end
 	end
-	
+
 	Fatalitywin.Name = Fatality:RandomString();
 	Fatalitywin.Parent = CoreGui;
 	Fatalitywin.ResetOnSpawn = false;
 	Fatalitywin.IgnoreGuiInset = true;
 	Fatalitywin.ZIndexBehavior = Enum.ZIndexBehavior.Global;
-	
+
 	table.insert(Fatality.Windows,Fatalitywin)
-	
+
 	protect_gui(Fatalitywin);
-	
+
 	FatalFrame.Active = true;
 	FatalFrame.Name = Fatality:RandomString()
 	FatalFrame.Parent = Fatalitywin
-	FatalFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+	FatalFrame.AnchorPoint = Vector2.new(0.5, 0)
 	FatalFrame.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
 	FatalFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	FatalFrame.BorderSizePixel = 0
-	FatalFrame.Position = UDim2.new(0.5, 0, 0.5) - UDim2.new(0,0,Window.Scale.Y.Scale,Window.Scale.Y.Offset)
-	FatalFrame.Size = UDim2.new(Window.Scale.X.Scale,Window.Scale.X.Offset,0,0)
+	FatalFrame.Position = UDim2.new(0.5, 0, 0.2);
+	FatalFrame.Size = Window.Scale;
 	FatalFrame.ClipsDescendants = true
-	
+
 	UICorner.CornerRadius = UDim.new(0, 5)
 	UICorner.Parent = FatalFrame
 
@@ -3481,7 +3652,7 @@ function Fatality.new(Window: Window)
 	expire_days.TextStrokeTransparency = 0.700
 	expire_days.TextXAlignment = Enum.TextXAlignment.Right
 	expire_days.RichText = true;
-	
+
 	HeaderLineShadow.Name = Fatality:RandomString()
 	HeaderLineShadow.Parent = Header
 	HeaderLineShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -3543,28 +3714,28 @@ function Fatality.new(Window: Window)
 
 	UICorner_6.CornerRadius = UDim.new(0, 5)
 	UICorner_6.Parent = HeaderLineShadow_2
-	
+
 	Fatality:Drag(Header,FatalFrame,0.1);
-	
+
 	UserInputService.InputBegan:Connect(function(input,istyping)
 		if not istyping then
 			if input.KeyCode == Window.Keybind or input.KeyCode.Name == Window.Keybind then
 				Fatal.Toggle = not Fatal.Toggle;
-				
+
 				ToggleUI(Fatal.Toggle);
 			end;
 		end
 	end)
-	
+
 	function Fatal:SetExpire(str: string)
 		expire_days.Text = string.format("<font transparency=\"0.5\">expires:</font> <font color=\"#f53174\">%s</font>",str)
 	end;
-	
+
 	function Fatal:AddMenu(Menu : Menu)
 		Menu = Menu or {};
 		Menu.Name = Menu.Name or "EXAMPLE";
 		Menu.Icon = Menu.Icon or "eye";
-		
+
 		local MenuLib = {};
 		local MenuButton = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
@@ -3604,7 +3775,7 @@ function Fatality.new(Window: Window)
 
 		UICorner_2.CornerRadius = UDim.new(1, 0)
 		UICorner_2.Parent = Icon
-		
+
 		menu_name.Name = Fatality:RandomString()
 		menu_name.Parent = MenuButton
 		menu_name.AnchorPoint = Vector2.new(0, 0.5)
@@ -3622,11 +3793,11 @@ function Fatality.new(Window: Window)
 		menu_name.TextStrokeTransparency = 0.900
 		menu_name.TextTransparency = 0.150
 		menu_name.TextXAlignment = Enum.TextXAlignment.Left
-		
+
 		local text_size = Fatality:GetTextSize(menu_name);
-		
+
 		MenuButton.Size = UDim2.new(0, text_size.X + 33, 0.85, 0)
-		
+
 		local MenuLiber = Instance.new("Frame")
 		local Left = Instance.new("ScrollingFrame")
 		local UIListLayout = Instance.new("UIListLayout")
@@ -3634,7 +3805,7 @@ function Fatality.new(Window: Window)
 		local UIListLayout_2 = Instance.new("UIListLayout")
 		local Right = Instance.new("ScrollingFrame")
 		local UIListLayout_3 = Instance.new("UIListLayout")
-		
+
 		Fatality:ScrollSignal(Right,UIListLayout_3,'Y');
 		Fatality:ScrollSignal(Center,UIListLayout_2,'Y');
 		Fatality:ScrollSignal(Left,UIListLayout,'Y');
@@ -3702,14 +3873,76 @@ function Fatality.new(Window: Window)
 		UIListLayout_3.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout_3.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout_3.Padding = UDim.new(0, 5)
-		
+
 		local BindEvent = Instance.new('BindableEvent',MenuLiber);
 		BindEvent.Name = Fatality:RandomString();
+		
+		Fatal.Signal.Event:Connect(function(Bool)
+			if Bool then
+				Fatality:CreateAnimation(MenuButton,0.5,{
+					BackgroundTransparency = (MenuLiber.Visible and 0) or 1
+				})
+				
+				Fatality:CreateAnimation(UIStroke,0.5,{
+					Transparency = 0.950
+				})
+			
+				Fatality:CreateAnimation(Left,0.3,{
+					Position = UDim2.new(0.175, 0, 0.5, 0)
+				})
+				
+				Fatality:CreateAnimation(Center,0.4,{
+					Position = UDim2.new(0.5, 0, 0.5, 0)
+				})
+				
+				Fatality:CreateAnimation(Right,0.5,{
+					Position = UDim2.new(0.825, 0, 0.5, 0)
+				})
+				
+				Fatality:CreateAnimation(Icon,0.5,{
+					ImageTransparency = (MenuLiber.Visible and 0.15) or 0.5
+				})
+				
+				Fatality:CreateAnimation(menu_name,0.5,{
+					TextStrokeTransparency = 0.900,
+					TextTransparency = (MenuLiber.Visible and 0.15) or 0.5
+				})
+			else
+				Fatality:CreateAnimation(Left,0.5,{
+					Position = UDim2.new(0.175, 0, 1, 415)
+				})
+
+				Fatality:CreateAnimation(Center,0.5,{
+					Position = UDim2.new(0.5, 0, 1, 515)
+				})
+
+				Fatality:CreateAnimation(Right,0.5,{
+					Position = UDim2.new(0.825, 0, 1, 615)
+				})
+				
+				Fatality:CreateAnimation(MenuButton,0.5,{
+					BackgroundTransparency = 1
+				})
+
+				Fatality:CreateAnimation(UIStroke,0.5,{
+					Transparency = 1
+				})
+
+				Fatality:CreateAnimation(Icon,0.5,{
+					ImageTransparency = 1
+				})
+
+				Fatality:CreateAnimation(menu_name,0.5,{
+					TextStrokeTransparency = 1,
+					TextTransparency = 1
+				})
+			end;
+		end)
 		
 		local ValueSelect = function(val)
 			if val then
 				MenuLiber.Visible = true;
-				
+
 				Fatality:CreateAnimation(Icon,0.5,{
 					ImageTransparency = 0.15,
 					ImageColor3 = Color3.fromRGB(255, 106, 133)
@@ -3718,50 +3951,50 @@ function Fatality.new(Window: Window)
 				Fatality:CreateAnimation(menu_name,0.5,{
 					TextTransparency = 0.15
 				});
-				
+
 				Fatality:CreateAnimation(MenuButton,0.5,{
 					BackgroundTransparency = 0
 				})
-				
+
 				BindEvent:SetAttribute('V',true);
 				BindEvent:Fire(true);
 			else
 				BindEvent:SetAttribute('V',false);
 				BindEvent:Fire(false);
-				
+
 				MenuLiber.Visible = false;
-				
+
 				Fatality:CreateAnimation(Icon,0.5,{
 					ImageTransparency = 0.5,
 					ImageColor3 = Color3.fromRGB(255, 255, 255)
 				});
-				
+
 				Fatality:CreateAnimation(MenuButton,0.5,{
 					BackgroundTransparency = 1
 				})
-				
+
 				Fatality:CreateAnimation(menu_name,0.5,{
 					TextTransparency = 0.5
 				});
 			end;
 		end;
-		
+
 		local _B = {
 			Root = MenuLiber,
 			ValueSelect = ValueSelect,
 			Bindable = BindEvent,
 		};
-		
+
 		if not Fatal.MenuSelected then
 			Fatal.MenuSelected = _B;
-			
+
 			ValueSelect(true);
 		else
 			ValueSelect(false);
 		end;
-		
+
 		table.insert(Fatal.Menus,_B)
-		
+
 		Fatality:CreateHover(MenuButton,function(bool)
 			if Fatal.MenuSelected.Root ~= MenuLiber then
 				if bool then
@@ -3769,11 +4002,11 @@ function Fatality.new(Window: Window)
 						ImageTransparency = 0.2,
 						ImageColor3 = Color3.fromRGB(255, 255, 255)
 					});
-					
+
 					Fatality:CreateAnimation(MenuButton,0.5,{
 						BackgroundTransparency = 1
 					})
-					
+
 					Fatality:CreateAnimation(menu_name,0.5,{
 						TextTransparency = 0.2
 					});
@@ -3782,7 +4015,7 @@ function Fatality.new(Window: Window)
 						ImageTransparency = 0.5,
 						ImageColor3 = Color3.fromRGB(255, 255, 255)
 					});
-					
+
 					Fatality:CreateAnimation(MenuButton,0.5,{
 						BackgroundTransparency = 1
 					})
@@ -3793,25 +4026,25 @@ function Fatality.new(Window: Window)
 				end
 			end;
 		end)
-		
+
 		Fatality:NewInput(MenuButton,function()
 			for i,v in next , Fatal.Menus do
 				if v.Root == MenuLiber then
 					Fatal.MenuSelected = v;
-					
+
 					v.ValueSelect(true)
 				else
 					v.ValueSelect(false)
 				end;
 			end;
 		end);
-		
+
 		function MenuLib:AddSection(Config : Section)
 			Config = Config or {};
 			Config.Name = Config.Name or "SECTION";
 			Config.Position = Config.Position or "center";
 			Config.Height = Config.Height or 0;
-			
+
 			local Section = Instance.new("Frame")
 			local Elements = Instance.new("Frame")
 			local UIStroke = Instance.new("UIStroke")
@@ -3819,17 +4052,17 @@ function Fatality.new(Window: Window)
 			local UIListLayout = Instance.new("UIListLayout")
 			local SpaceBox = Instance.new("Frame")
 			local SectionName = Instance.new("TextLabel")
-			
+
 			local Toggle = function(v)
 				if v then
 					Fatality:CreateAnimation(Section,0.5,{
 						BackgroundTransparency = 0
 					})
-					
+
 					Fatality:CreateAnimation(UIStroke,0.5,{
 						Transparency = 0
 					})
-					
+
 					Fatality:CreateAnimation(SectionName,0.5,{
 						TextStrokeTransparency = 0.750,
 						TextTransparency = 0
@@ -3849,7 +4082,7 @@ function Fatality.new(Window: Window)
 					})
 				end
 			end;
-			
+
 			Section.Name = Fatality:RandomString()
 			Section.Parent = (string.lower(Config.Position) == 'left' and Left) or (string.lower(Config.Position) == 'center' and Center) or Right;
 			Section.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
@@ -3900,25 +4133,291 @@ function Fatality.new(Window: Window)
 			SectionName.TextSize = 15.000
 			SectionName.TextStrokeTransparency = 0.750
 			SectionName.TextXAlignment = Enum.TextXAlignment.Left
-			
+
 			UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 				Fatality:CreateAnimation(Section,0.25,{
 					Size = UDim2.new(1, 0, 0, UIListLayout.AbsoluteContentSize.Y + 20 + Config.Height)
 				})
 			end);
-			
+
 			Toggle(BindEvent:GetAttribute('V'));
-			
+
 			BindEvent.Event:Connect(Toggle);
-			
+
 			return Fatality:CreateElements(Elements,Elements.ZIndex,BindEvent);
 		end;
-		
+
 		return MenuLib;
 	end;
 	
-	ToggleUI(true);
+	do
+		InfoButton.Name = Fatality:RandomString()
+		InfoButton.Parent = Bottom
+		InfoButton.AnchorPoint = Vector2.new(1, 0.5)
+		InfoButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		InfoButton.BackgroundTransparency = 1.000
+		InfoButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		InfoButton.BorderSizePixel = 0
+		InfoButton.Position = UDim2.new(1, -5, 0.5, 0)
+		InfoButton.Size = UDim2.new(0, 16, 0, 16)
+		InfoButton.ZIndex = 4
+		InfoButton.Image = "rbxassetid://10723415903"
+		InfoButton.ImageTransparency = 0.500
+
+		SearchButton.Name = Fatality:RandomString()
+		SearchButton.Parent = Bottom
+		SearchButton.AnchorPoint = Vector2.new(0, 0.5)
+		SearchButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		SearchButton.BackgroundTransparency = 1.000
+		SearchButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		SearchButton.BorderSizePixel = 0
+		SearchButton.Position = UDim2.new(0, 10, 0.5, 0)
+		SearchButton.Size = UDim2.new(0, 16, 0, 16)
+		SearchButton.ZIndex = 4
+		SearchButton.Image = "rbxassetid://10734943674"
+		SearchButton.ImageTransparency = 0.500
+
+		SaveButton.Name = Fatality:RandomString()
+		SaveButton.Parent = Bottom
+		SaveButton.AnchorPoint = Vector2.new(0, 0.5)
+		SaveButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		SaveButton.BackgroundTransparency = 1.000
+		SaveButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		SaveButton.BorderSizePixel = 0
+		SaveButton.Position = UDim2.new(0, 35, 0.5, 0)
+		SaveButton.Size = UDim2.new(0, 16, 0, 16)
+		SaveButton.ZIndex = 4
+		SaveButton.Image = "rbxassetid://10734941499"
+		SaveButton.ImageTransparency = 0.500
+		
+		Fatality:CreateHover(SaveButton,function(bool)
+			if bool then
+				Fatality:CreateAnimation(SaveButton,0.5,{
+					ImageTransparency = 0.1
+				})
+			else
+				Fatality:CreateAnimation(SaveButton,0.5,{
+					ImageTransparency = 0.5
+				})
+			end	
+		end);
+		
+		Fatality:CreateHover(InfoButton,function(bool)
+			if bool then
+				Fatality:CreateAnimation(InfoButton,0.5,{
+					ImageTransparency = 0.1
+				})
+			else
+				Fatality:CreateAnimation(InfoButton,0.5,{
+					ImageTransparency = 0.5
+				})
+			end	
+		end);
+		
+		function Fatal:AddSave(callback)
+			SaveButton.MouseButton1Click:Connect(callback);
+		end;
+		
+		function Fatal:AddInfo(callback)
+			InfoButton.MouseButton1Click:Connect(callback);
+		end;
+	end;
 	
+	function Fatal:GetButton()
+		local backpack = Instance.new("ImageButton")
+		local UICorner = Instance.new("UICorner")
+		local RowLabel = Instance.new("Frame")
+		local UIListLayout = Instance.new("UIListLayout")
+		local StyledTextLabel = Instance.new("TextLabel")
+		local UITextSizeConstraint = Instance.new("UITextSizeConstraint")
+		local UIPadding = Instance.new("UIPadding")
+		local IconHost = Instance.new("Frame")
+		local IntegrationIconFrame = Instance.new("Frame")
+		local UIListLayout_2 = Instance.new("UIListLayout")
+		local IntegrationIcon = Instance.new("ImageLabel")
+		local SelectedHighlighter = Instance.new("Frame")
+		local corner = Instance.new("UICorner")
+		local Highlighter = Instance.new("Frame")
+		local corner_2 = Instance.new("UICorner")
+		local _5 = Instance.new("Frame")
+
+		backpack.Name = "FATALITY";
+		backpack.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		backpack.BackgroundTransparency = 1.000
+		backpack.BorderSizePixel = 0
+		backpack.LayoutOrder = 9
+		backpack.Size = UDim2.new(1, 0, 0, 56)
+		backpack.AutoButtonColor = false
+
+		UICorner.CornerRadius = UDim.new(0, 10)
+		UICorner.Parent = backpack
+
+		RowLabel.Name = "RowLabel"
+		RowLabel.Parent = backpack
+		RowLabel.BackgroundTransparency = 1.000
+		RowLabel.BorderSizePixel = 0
+		RowLabel.LayoutOrder = 9
+		RowLabel.Size = UDim2.new(1, 0, 1, 0)
+
+		UIListLayout.Parent = RowLabel
+		UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+		UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+		UIListLayout.Padding = UDim.new(0, 8)
+
+		StyledTextLabel.Name = "StyledTextLabel"
+		StyledTextLabel.Parent = RowLabel
+		StyledTextLabel.BackgroundTransparency = 1.000
+		StyledTextLabel.Size = UDim2.new(1, -52, 1, 0)
+		StyledTextLabel.Font = Enum.Font.BuilderSansBold
+		StyledTextLabel.Text = Window.Name
+		StyledTextLabel.TextColor3 = Color3.fromRGB(247, 247, 248)
+		StyledTextLabel.TextScaled = true
+		StyledTextLabel.TextSize = 20.000
+		StyledTextLabel.TextWrapped = true
+		StyledTextLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+		UITextSizeConstraint.Parent = StyledTextLabel
+		UITextSizeConstraint.MaxTextSize = 20
+		UITextSizeConstraint.MinTextSize = 15
+
+		UIPadding.Parent = RowLabel
+		UIPadding.PaddingLeft = UDim.new(0, 8)
+		UIPadding.PaddingRight = UDim.new(0, 8)
+
+		IconHost.Name = "IconHost"
+		IconHost.Parent = RowLabel
+		IconHost.BackgroundTransparency = 1.000
+		IconHost.BorderSizePixel = 0
+		IconHost.LayoutOrder = 9
+		IconHost.Size = UDim2.new(0, 44, 0, 44)
+		IconHost.ZIndex = 9
+
+		IntegrationIconFrame.Name = "IntegrationIconFrame"
+		IntegrationIconFrame.Parent = IconHost
+		IntegrationIconFrame.BackgroundTransparency = 1.000
+		IntegrationIconFrame.BorderSizePixel = 0
+		IntegrationIconFrame.Size = UDim2.new(1, 0, 1, 0)
+
+		UIListLayout_2.Parent = IntegrationIconFrame
+		UIListLayout_2.FillDirection = Enum.FillDirection.Horizontal
+		UIListLayout_2.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		UIListLayout_2.VerticalAlignment = Enum.VerticalAlignment.Center
+
+		IntegrationIcon.Name = "IntegrationIcon"
+		IntegrationIcon.Parent = IntegrationIconFrame
+		IntegrationIcon.BackgroundTransparency = 1.000
+		IntegrationIcon.Size = UDim2.new(0, 36, 0, 36)
+		IntegrationIcon.Image = "http://www.roblox.com/asset/?id=11290237405"
+		IntegrationIcon.ImageColor3 = Color3.fromRGB(247, 247, 248)
+
+		SelectedHighlighter.Name = "SelectedHighlighter"
+		SelectedHighlighter.Parent = IconHost
+		SelectedHighlighter.AnchorPoint = Vector2.new(0.5, 0.5)
+		SelectedHighlighter.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		SelectedHighlighter.BackgroundTransparency = 0.850
+		SelectedHighlighter.BorderSizePixel = 0
+		SelectedHighlighter.Position = UDim2.new(0.5, 0, 0.5, 0)
+		SelectedHighlighter.Size = UDim2.new(0, 36, 0, 36)
+		SelectedHighlighter.Visible = false
+
+		corner.CornerRadius = UDim.new(1, 0)
+		corner.Name = "corner"
+		corner.Parent = SelectedHighlighter
+
+		Highlighter.Name = "Highlighter"
+		Highlighter.Parent = IconHost
+		Highlighter.AnchorPoint = Vector2.new(0.5, 0.5)
+		Highlighter.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Highlighter.BackgroundTransparency = 0.850
+		Highlighter.BorderSizePixel = 0
+		Highlighter.Position = UDim2.new(0.5, 0, 0.5, 0)
+		Highlighter.Size = UDim2.new(0, 36, 0, 36)
+		Highlighter.Visible = false
+
+		corner_2.CornerRadius = UDim.new(1, 0)
+		corner_2.Name = "corner"
+		corner_2.Parent = Highlighter
+
+		_5.Name = "5"
+		_5.Parent = IconHost
+		_5.BackgroundTransparency = 1.000
+		_5.Size = UDim2.new(1, 0, 1, 0)
+		_5.ZIndex = 2
+
+		backpack.MouseButton1Click:Connect(function()
+			Fatal.Toggle = not Fatal.Toggle;
+
+			ToggleUI(Fatal.Toggle);
+		end);
+
+		backpack.MouseEnter:Connect(function()
+			Fatality:CreateAnimation(backpack,0.3,nil,{
+				BackgroundColor3 = Color3.fromRGB(255, 106, 133),
+				BackgroundTransparency = 0.85
+			})
+		end)
+
+		backpack.MouseLeave:Connect(function()
+			Fatality:CreateAnimation(backpack,0.3,nil,{
+				BackgroundTransparency = 1
+			})
+		end)
+
+		return backpack;
+	end;
+	
+	-- Toggle Button --
+	task.spawn(function()
+		local IsExploit = pcall(function() 
+			return game:GetService('CoreGui'):FindFirstChild('TopBarApp');
+		end);
+
+		local TopBar;
+		if not IsExploit then
+			TopBar = game:GetService('ReplicatedStorage'):FindFirstChild('Icon') or (game:GetService('ReplicatedStorage'):FindFirstChild('Elements',true) and game:GetService('ReplicatedStorage'):FindFirstChild('Elements',true).Parent);
+			if TopBar then
+				TopBar = require(TopBar);
+				TopBar.new()
+					:setImage("http://www.roblox.com/asset/?id=11290237405")
+					:setLabel(Window.Name).toggled:Connect(function(val)
+						Fatal.Toggle = not Fatal.Toggle;
+
+						ToggleUI(Fatal.Toggle);
+					end)
+
+				return;
+			end;
+		end;
+
+		while true do task.wait(0.1)
+			if IsExploit then
+				local SubMenuHost = game:GetService('CoreGui'):FindFirstChild('TopBarApp'):FindFirstChild('TopBarApp'):FindFirstChild('UnibarLeftFrame'):FindFirstChild('UnibarMenu'):WaitForChild('SubMenuHost');
+
+				if SubMenuHost:FindFirstChild('nine_dot') then
+					local ScrollingFrame : ScrollingFrame = SubMenuHost:FindFirstChild('nine_dot'):FindFirstChild('ScrollingFrame'):FindFirstChild('MainCanvas');
+
+					if not ScrollingFrame:FindFirstChild('airflow') then
+						local airflow = Fatal:GetButton();
+
+						airflow.Parent = ScrollingFrame;
+					else
+						local UISizeConstraint : UISizeConstraint = ScrollingFrame:FindFirstChild('UISizeConstraint');
+						local UIListLayout : UIListLayout = ScrollingFrame:FindFirstChild('UIListLayout');
+						local BottomPadding : Frame = ScrollingFrame:FindFirstChild('BottomPadding');
+
+						if UserInputService.TouchEnabled then
+							ScrollingFrame.CanvasSize = UDim2.fromOffset(0,UIListLayout.AbsoluteContentSize.Y);
+						else
+							UISizeConstraint.MinSize = Vector2.new(0,UIListLayout.AbsoluteContentSize.Y - BottomPadding.AbsoluteSize.Y);
+						end;
+					end;
+				end;
+			end;
+		end;
+	end)
+
+	ToggleUI(true);
+
 	return Fatal;
 end;
 
@@ -3927,7 +4426,7 @@ function Fatality:Loader(Config: Loader)
 	Config.Name = Config.Name or "FATALITY";
 	Config.Duration = Config.Duration or 3.5;
 	Config.Scale = Config.Scale or 3;
-	
+
 	local Blur = Instance.new('BlurEffect');
 	local Loader = Instance.new("ScreenGui")
 	local center = Instance.new("Frame")
@@ -3973,19 +4472,23 @@ function Fatality:Loader(Config: Loader)
 	BlackFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	BlackFrame.BorderSizePixel = 0
 	BlackFrame.Size = UDim2.new(1, 0, 1, 0)
-	
+
 	Blur.Size = 0;
 	Blur.Parent = game:GetService('Lighting');
-	
+
 	Fatality:CreateAnimation(Blur,1,{
 		Size = 60
 	})
-	
+
 	Fatality:CreateAnimation(BlackFrame,0.5,{
 		BackgroundTransparency = 0.7
 	}).Completed:Wait();
-	
+
 	task.wait(0.5);
+	
+	local UText = {
+		Y = 14,
+	};
 	
 	local createText = function(TEXT)
 		local LIT = Instance.new("Frame")
@@ -4016,43 +4519,43 @@ function Fatality:Loader(Config: Loader)
 		ASCII.TextColor3 = Color3.fromRGB(255, 255, 255)
 		ASCII.TextSize = 50.000
 		ASCII.TextWrapped = true
-		
+
 		local textsize = Fatality:GetTextSize(ASCII);
-		
+
 		ASCII.Size = UDim2.new(0, textsize.X, 0, 50)
-		LIT.Size = UDim2.new(0, textsize.X * 2.5, 0, 100)
-		
+		LIT.Size = UDim2.new(0, (textsize.X * 2.5) + (UText[TEXT] or 0), 0, 100)
+
 		UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 116, 116)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(132, 58, 58))}
 		UIGradient.Rotation = 88
 		UIGradient.Parent = ASCII
 
 		UIScale.Parent = ASCII
 		UIScale.Scale = Config.Scale
-		
+
 		return LIT,ASCII
 	end;
-	
+
 	local PosText = {};
 	local IsFirst = true;
 	
 	string.gsub(Config.Name,'.',function(T)
 		local L,A = createText(T);
-		
+
 		L.Parent = texts;
 		A.TextTransparency = 1;
-		
+
 		if not IsFirst then
 			A.Position = UDim2.new(0.5,0,0.5,200);
 		end;
-		
+
 		table.insert(PosText,{
 			Frame = L,
 			Text = A
 		});
-		
+
 		IsFirst = false;
 	end);
-	
+
 	do
 		local StartText = Instance.new("TextLabel")
 		local UIGradient = Instance.new("UIGradient")
@@ -4074,7 +4577,7 @@ function Fatality:Loader(Config: Loader)
 		StartText.TextSize = 50.000
 		StartText.TextWrapped = true
 		StartText.TextTransparency = 1;
-		
+
 		local textsize = Fatality:GetTextSize(StartText);
 
 		StartText.Size = UDim2.new(0, textsize.X, 0, 50)
@@ -4084,24 +4587,24 @@ function Fatality:Loader(Config: Loader)
 		UIGradient.Parent = StartText
 
 		UIScale.Parent = StartText
-		UIScale.Scale = Config.Scale * 3.5;
-		
+		UIScale.Scale = Config.Scale * 4;
+
 		Fatality:CreateAnimation(StartText,0.45,{
 			TextTransparency = 0
 		})
-		
+
 		Fatality:CreateAnimation(UIScale,0.5,{
 			Scale = Config.Scale;
 		});
-		
+
 		task.wait(0.45);
-		
+
 		Fatality:CreateAnimation(StartText,0.35,{
 			Position = UDim2.fromOffset(PosText[1].Frame.AbsolutePosition.X + (StartText.AbsoluteSize.X / 2),PosText[1].Frame.AbsolutePosition.Y + (PosText[1].Frame.AbsoluteSize.Y / 2) + math.abs(Loader.AbsolutePosition.Y))
 		})
-		
+
 		task.wait(0.5);
-		
+
 		for i,v in next , PosText do
 			if i > 1 then
 				Fatality:CreateAnimation(v.Text,0.65,{
@@ -4110,19 +4613,19 @@ function Fatality:Loader(Config: Loader)
 				})
 			end;
 		end;
-		
+
 		task.wait((Config.Duration - 0.5) + 0.65);
-		
+
 		Fatality:CreateAnimation(StartText,1.5,{
 			TextTransparency = 1
 		})
-		
+
 		for i,v in next , PosText do
 			Fatality:CreateAnimation(v.Text,1.5,{
 				TextTransparency = 1
 			})
 		end;
-		
+
 		Fatality:CreateAnimation(Blur,1.5,{
 			Size = 0
 		})
@@ -4130,9 +4633,9 @@ function Fatality:Loader(Config: Loader)
 		Fatality:CreateAnimation(BlackFrame,1.5,{
 			BackgroundTransparency = 1
 		})
-		
+
 		task.wait(1.65);
-		
+
 		Loader:Destroy();
 	end;
 end;
@@ -4141,7 +4644,7 @@ function Fatality:CreateNotifier(): Notifier
 	local Notify = Instance.new("ScreenGui")
 	local layout = Instance.new("Frame")
 	local UIListLayout = Instance.new("UIListLayout")
-	
+
 	Notify.Name = Fatality:RandomString();
 	Notify.Parent = CoreGui
 	Notify.ResetOnSpawn = false
@@ -4161,7 +4664,7 @@ function Fatality:CreateNotifier(): Notifier
 	UIListLayout.Parent = layout
 	UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	
+
 	return Fatality:CreateResponse({
 		Notify = function(Config: Notify)
 			Config = Config or {}
@@ -4169,7 +4672,7 @@ function Fatality:CreateNotifier(): Notifier
 			Config.Content = Config.Content or nil;
 			Config.Title = Config.Title or "Notification";
 			Config.Duration = Config.Duration or 5;
-			
+
 			local notify = Instance.new("Frame")
 			local notify_block = Instance.new("Frame")
 			local UICorner = Instance.new("UICorner")
@@ -4197,7 +4700,7 @@ function Fatality:CreateNotifier(): Notifier
 			notify_block.Size = UDim2.new(1, 0, 1, -12)
 			notify_block.ClipsDescendants = true
 			notify_block.ZIndex = 54
-			
+
 			UICorner.CornerRadius = UDim.new(0, 3)
 			UICorner.Parent = notify_block
 
@@ -4216,7 +4719,7 @@ function Fatality:CreateNotifier(): Notifier
 			Icon.Image = Fatality:GetIcon(Config.Icon);
 			Icon.ImageColor3 = Color3.fromRGB(255, 106, 133)
 			Icon.ZIndex = 55
-			
+
 			HeaderText.Name = "HeaderText"
 			HeaderText.Parent = notify_block
 			HeaderText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -4251,18 +4754,18 @@ function Fatality:CreateNotifier(): Notifier
 			BodyText.TextWrapped = true
 			BodyText.TextXAlignment = Enum.TextXAlignment.Left
 			BodyText.TextYAlignment = Enum.TextYAlignment.Top
-			
+
 			local updateScale = function()
 				local TitleScale = Fatality:GetTextSize(HeaderText,Enum.Font.GothamBold);
 				local ContentScale = Fatality:GetTextSize(BodyText,Enum.Font.GothamMedium);
-				
+
 				local XScale = (TitleScale.X > ContentScale.X and TitleScale.X) or ContentScale.X;
 				local YScale = (TitleScale.Y > ContentScale.Y and TitleScale.Y) or ContentScale.Y;
-				
+
 				Fatality:CreateAnimation(notify,0.25,{
 					Size = UDim2.new(0, 0, 0, YScale + 50)
 				})
-				
+
 				task.delay(0.25,function()
 					Fatality:CreateAnimation(notify,0.15,{
 						Size = UDim2.new(0, XScale + 25, 0, YScale + 50)
@@ -4273,21 +4776,21 @@ function Fatality:CreateNotifier(): Notifier
 					})
 				end);
 			end;
-			
+
 			updateScale();
-			
+
 			task.delay(Config.Duration + 0.26,function()
 				Fatality:CreateAnimation(notify_block,0.5,{
 					Position = UDim2.new(2, 100, 0, 0)
 				})
-				
+
 				task.delay(0.65,function()
 					Fatality:CreateAnimation(notify,0.5,{
 						Size = UDim2.new(0,0,0,0)
 					})
-					
+
 					task.wait(0.5)
-					
+
 					notify:Destroy();
 				end);
 			end)
