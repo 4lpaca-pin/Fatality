@@ -143,7 +143,7 @@ Fatality.GLOBAL_ENVIRONMENT = {};
 Fatality.Windows = {};
 Fatality.FontSemiBold = Font.new('rbxasset://fonts/families/GothamSSm.json',Enum.FontWeight.SemiBold,Enum.FontStyle.Normal);
 Fatality.Flags = {};
-Fatality.Version = '1.1';
+Fatality.Version = '1.2';
 Fatality.Lucide = {
 	["lucide-accessibility"] = "rbxassetid://10709751939",
 	["lucide-activity"] = "rbxassetid://10709752035",
@@ -3276,9 +3276,9 @@ function Fatality.new(Window: Window)
 	local InfoButton = Instance.new("ImageButton")
 	local SearchButton = Instance.new("ImageButton")
 	local SaveButton = Instance.new("ImageButton")
-	
+
 	Fatality:ScrollSignal(tbc,UIListLayout,'X');
-	
+
 	FatalFrame:GetPropertyChangedSignal("BackgroundTransparency"):Connect(function()
 		if FatalFrame.BackgroundTransparency >= 0.99 then
 			Fatalitywin.Enabled = false;
@@ -3286,87 +3286,87 @@ function Fatality.new(Window: Window)
 			Fatalitywin.Enabled = true;
 		end;
 	end);
-	
+
 	local ToggleUI = function(bool)
 		Fatal.Signal:Fire(bool);
-		
+
 		if bool then
 			for i,v in next , Fatal.Menus do
 				v.ValueSelect(false);
 			end;
-			
+
 			if Fatal.MenuSelected then
 				Fatal.MenuSelected.ValueSelect(true)
 			end
-			
+
 			Fatality:CreateAnimation(FatalFrame,0.15,{
 				Size = Window.Scale,
 				BackgroundTransparency = 0,
 			})
-			
+
 			Fatality:CreateAnimation(Header,0.5,{
 				BackgroundTransparency = 0,
 			})
-			
+
 			Fatality:CreateAnimation(HeaderLine,0.5,{
 				BackgroundTransparency = 0,
 			})
-			
+
 			Fatality:CreateAnimation(Bottom,0.5,{
 				BackgroundTransparency = 0,
 			})
-			
+
 			Fatality:CreateAnimation(HeaderLine_2,0.5,{
 				BackgroundTransparency = 0,
 			})
-			
+
 			Fatality:CreateAnimation(HeaderLineShadow,0.5,{
 				BackgroundTransparency = 0.5,
 			})
-			
+
 			Fatality:CreateAnimation(HeaderLineShadow_2,0.5,{
 				BackgroundTransparency = 0.5,
 			})
-			
+
 			--Fatalitywin.Enabled = true;
-			
+
 			Fatality:CreateAnimation(InfoButton,0.35,{
 				ImageTransparency = 0.5
 			})
-			
+
 			Fatality:CreateAnimation(SearchButton,0.35,{
 				ImageTransparency = 0.5
 			})
-			
+
 			Fatality:CreateAnimation(SaveButton,0.35,{
 				ImageTransparency = 0.5
 			})
-			
+
 			Fatality:CreateAnimation(HeaderText,0.35,{
 				TextStrokeTransparency = 0.640,
 				TextTransparency = 0
 			})
-			
+
 			Fatality:CreateAnimation(UserIcon,0.45,{
 				ImageTransparency = 0,
 				Position = UDim2.new(1, -10,0.5, 0)
 			})
-			
+
 			Fatality:CreateAnimation(User_name,0.35,{
 				TextTransparency = 0,
 				Position = UDim2.new(1, -40,0, 3)
 			})
-			
+
 			Fatality:CreateAnimation(expire_days,0.5,{
 				TextTransparency = 0,
 				Position = UDim2.new(1, -40,0, 16)
 			})
-			
+
 			Fatality:CreateAnimation(UIStroke,0.35,{
 				Thickness = 2.500,
 				Transparency = 0.900
 			})
-			
+
 			task.delay(0.3,function()
 				if Fatal.Toggle then
 					Fatality:CreateAnimation(InfoButton,0.65,Enum.EasingStyle.Back,{
@@ -3382,7 +3382,7 @@ function Fatality.new(Window: Window)
 					})
 				end;
 			end)
-			
+
 			Fatality:CreateAnimation(DropShadow,0.35,{
 				ImageTransparency = 0.75
 			})
@@ -3390,50 +3390,50 @@ function Fatality.new(Window: Window)
 			for i,v in next , Fatal.Menus do
 				v.ValueSelect(false);
 			end;
-			
+
 			--Fatalitywin.Enabled = false;
-			
+
 			Fatality:CreateAnimation(SaveButton,0.35,{
 				Position = UDim2.new(0,35,1, 20)
 			})
-			
+
 			Fatality:CreateAnimation(SearchButton,0.35,{
 				Position = UDim2.new(0,10,1, 20)
 			})
-			
+
 			Fatality:CreateAnimation(InfoButton,0.35,{
 				Position = UDim2.new(1, -5,1, 20)
 			})
-			
+
 			Fatality:CreateAnimation(UIStroke,0.35,{
 				Thickness = 0,
 				Transparency = 1
 			})
-			
+
 			Fatality:CreateAnimation(UserIcon,0.35,{
 				ImageTransparency = 1,
-				Position = UDim2.new(1, 210,0.5, 0)
+				Position = UDim2.new(1, -10,0.5, 0)
 			})
 
 			Fatality:CreateAnimation(User_name,0.35,{
 				TextTransparency = 1,
-				Position = UDim2.new(1, 200,0, 3)
+				Position = UDim2.new(1, -40,0, 3)
 			})
 
 			Fatality:CreateAnimation(expire_days,0.1,{
 				TextTransparency = 1,
-				Position = UDim2.new(1, 200,0, 16)
+				Position = UDim2.new(1, -40,0, 16)
 			})
-			
+
 			Fatality:CreateAnimation(HeaderText,0.35,{
 				TextStrokeTransparency = 1,
 				TextTransparency = 1
 			})
-			
+
 			Fatality:CreateAnimation(HeaderLineShadow_2,0.5,{
 				BackgroundTransparency = 1,
 			})
-			
+
 			Fatality:CreateAnimation(InfoButton,0.35,{
 				ImageTransparency = 1
 			})
@@ -3445,11 +3445,11 @@ function Fatality.new(Window: Window)
 			Fatality:CreateAnimation(SaveButton,0.35,{
 				ImageTransparency = 1
 			})
-			
+
 			Fatality:CreateAnimation(HeaderLineShadow,0.5,{
 				BackgroundTransparency = 1,
 			})
-			
+
 			Fatality:CreateAnimation(FatalFrame,0.75,{
 				BackgroundTransparency = 1,
 			})
@@ -3469,7 +3469,7 @@ function Fatality.new(Window: Window)
 			Fatality:CreateAnimation(HeaderLine_2,0.5,{
 				BackgroundTransparency = 1,
 			})
-			
+
 			Fatality:CreateAnimation(DropShadow,0.35,{
 				ImageTransparency = 1
 			})
@@ -3876,50 +3876,50 @@ function Fatality.new(Window: Window)
 
 		local BindEvent = Instance.new('BindableEvent',MenuLiber);
 		BindEvent.Name = Fatality:RandomString();
-		
+
 		Fatal.Signal.Event:Connect(function(Bool)
 			if Bool then
 				Fatality:CreateAnimation(MenuButton,0.5,{
 					BackgroundTransparency = (MenuLiber.Visible and 0) or 1
 				})
-				
+
 				Fatality:CreateAnimation(UIStroke,0.5,{
 					Transparency = 0.950
 				})
-			
+
 				Fatality:CreateAnimation(Left,0.3,{
 					Position = UDim2.new(0.175, 0, 0.5, 0)
 				})
-				
+
 				Fatality:CreateAnimation(Center,0.4,{
 					Position = UDim2.new(0.5, 0, 0.5, 0)
 				})
-				
+
 				Fatality:CreateAnimation(Right,0.5,{
 					Position = UDim2.new(0.825, 0, 0.5, 0)
 				})
-				
+
 				Fatality:CreateAnimation(Icon,0.5,{
 					ImageTransparency = (MenuLiber.Visible and 0.15) or 0.5
 				})
-				
+
 				Fatality:CreateAnimation(menu_name,0.5,{
 					TextStrokeTransparency = 0.900,
 					TextTransparency = (MenuLiber.Visible and 0.15) or 0.5
 				})
 			else
 				Fatality:CreateAnimation(Left,0.5,{
-					Position = UDim2.new(0.175, 0, 1, 415)
+					Position = UDim2.new(0.175, 0, 0.5, 1)
 				})
 
 				Fatality:CreateAnimation(Center,0.5,{
-					Position = UDim2.new(0.5, 0, 1, 515)
+					Position = UDim2.new(0.5, 0, 0.5, 2)
 				})
 
 				Fatality:CreateAnimation(Right,0.5,{
-					Position = UDim2.new(0.825, 0, 1, 615)
+					Position = UDim2.new(0.825, 0, 0.5, 3)
 				})
-				
+
 				Fatality:CreateAnimation(MenuButton,0.5,{
 					BackgroundTransparency = 1
 				})
@@ -3938,7 +3938,7 @@ function Fatality.new(Window: Window)
 				})
 			end;
 		end)
-		
+
 		local ValueSelect = function(val)
 			if val then
 				MenuLiber.Visible = true;
@@ -4149,7 +4149,7 @@ function Fatality.new(Window: Window)
 
 		return MenuLib;
 	end;
-	
+
 	do
 		InfoButton.Name = Fatality:RandomString()
 		InfoButton.Parent = Bottom
@@ -4189,7 +4189,7 @@ function Fatality.new(Window: Window)
 		SaveButton.ZIndex = 4
 		SaveButton.Image = "rbxassetid://10734941499"
 		SaveButton.ImageTransparency = 0.500
-		
+
 		Fatality:CreateHover(SaveButton,function(bool)
 			if bool then
 				Fatality:CreateAnimation(SaveButton,0.5,{
@@ -4201,7 +4201,7 @@ function Fatality.new(Window: Window)
 				})
 			end	
 		end);
-		
+
 		Fatality:CreateHover(InfoButton,function(bool)
 			if bool then
 				Fatality:CreateAnimation(InfoButton,0.5,{
@@ -4213,16 +4213,16 @@ function Fatality.new(Window: Window)
 				})
 			end	
 		end);
-		
+
 		function Fatal:AddSave(callback)
 			SaveButton.MouseButton1Click:Connect(callback);
 		end;
-		
+
 		function Fatal:AddInfo(callback)
 			InfoButton.MouseButton1Click:Connect(callback);
 		end;
 	end;
-	
+
 	function Fatal:GetButton()
 		local backpack = Instance.new("ImageButton")
 		local UICorner = Instance.new("UICorner")
@@ -4365,7 +4365,7 @@ function Fatality.new(Window: Window)
 
 		return backpack;
 	end;
-	
+
 	-- Toggle Button --
 	task.spawn(function()
 		local IsExploit = pcall(function() 
@@ -4485,11 +4485,11 @@ function Fatality:Loader(Config: Loader)
 	}).Completed:Wait();
 
 	task.wait(0.5);
-	
+
 	local UText = {
 		Y = 14,
 	};
-	
+
 	local createText = function(TEXT)
 		local LIT = Instance.new("Frame")
 		local ASCII = Instance.new("TextLabel")
@@ -4522,7 +4522,7 @@ function Fatality:Loader(Config: Loader)
 
 		local textsize = Fatality:GetTextSize(ASCII);
 
-		ASCII.Size = UDim2.new(0, textsize.X, 0, 50)
+		ASCII.Size = UDim2.new(0, textsize.X + 100, 0, 50)
 		LIT.Size = UDim2.new(0, (textsize.X * 2.5) + (UText[TEXT] or 0), 0, 100)
 
 		UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 116, 116)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(132, 58, 58))}
@@ -4537,7 +4537,7 @@ function Fatality:Loader(Config: Loader)
 
 	local PosText = {};
 	local IsFirst = true;
-	
+
 	string.gsub(Config.Name,'.',function(T)
 		local L,A = createText(T);
 
