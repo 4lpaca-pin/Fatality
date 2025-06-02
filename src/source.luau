@@ -143,7 +143,7 @@ Fatality.GLOBAL_ENVIRONMENT = {};
 Fatality.Windows = {};
 Fatality.FontSemiBold = Font.new('rbxasset://fonts/families/GothamSSm.json',Enum.FontWeight.SemiBold,Enum.FontStyle.Normal);
 Fatality.Flags = {};
-Fatality.Version = '1.2';
+Fatality.Version = '1.3';
 Fatality.Lucide = {
 	["lucide-accessibility"] = "rbxassetid://10709751939",
 	["lucide-activity"] = "rbxassetid://10709752035",
@@ -2165,7 +2165,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 	return res;
 end;
 
-function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : BindableEvent) : Elements
+function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : BindableEvent,SearchAPI: {Path: string,Memory : (name:string) -> any}) : Elements
 	local elements = {};
 
 	function elements:AddToggle(Config: Toggle)
@@ -2182,7 +2182,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local UICorner = Instance.new("UICorner")
 		local ValueIcon = Instance.new("ImageLabel")
 		local OptionButton = Instance.new("ImageButton")
-
+		
+		if SearchAPI then
+			SearchAPI.Memory(Config.Name);
+		end;
+		
 		Toggle.Name = Fatality:RandomString()
 		Toggle.Parent = Parent
 		Toggle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2378,7 +2382,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local boxli = Instance.new("Frame")
 		local UICorner_2 = Instance.new("UICorner")
 		local ValueText = Instance.new("TextLabel")
-
+		
+		if SearchAPI then
+			SearchAPI.Memory(Config.Name);
+		end;
+		
 		Slider.Name = Fatality:RandomString()
 		Slider.Parent = Parent
 		Slider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2591,7 +2599,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local Button = Instance.new("Frame")
 		local Button_Name = Instance.new("TextLabel")
 		local UICorner = Instance.new("UICorner")
-
+		
+		if SearchAPI then
+			SearchAPI.Memory(Config.Name);
+		end;
+		
 		Button.Name = Fatality:RandomString()
 		Button.Parent = Parent
 		Button.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
@@ -2681,7 +2693,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local ValueFrame = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
 		local OptionButton = Instance.new("ImageButton")
-
+		
+		if SearchAPI then
+			SearchAPI.Memory(Config.Name);
+		end;
+		
 		ColorPicker.Name = Fatality:RandomString()
 		ColorPicker.Parent = Parent
 		ColorPicker.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2835,7 +2851,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local OptionButton = Instance.new("ImageButton")
 		local icon = Instance.new("ImageLabel")
 		local Value_Text = Instance.new("TextLabel")
-
+		
+		if SearchAPI then
+			SearchAPI.Memory(Config.Name);
+		end;
+		
 		Dropdown.Name = Fatality:RandomString()
 		Dropdown.Parent = Parent
 		Dropdown.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -3074,7 +3094,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local UICorner = Instance.new("UICorner")
 		local OptionButton = Instance.new("ImageButton")
 		local ValueText = Instance.new("TextLabel")
-
+		
+		if SearchAPI then
+			SearchAPI.Memory(Config.Name);
+		end;
+		
 		Keybind.Name = Fatality:RandomString()
 		Keybind.Parent = Parent
 		Keybind.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -3241,6 +3265,7 @@ function Fatality.new(Window: Window)
 
 	local Fatal = {
 		Menus = {},
+		ElementContents = {},
 		MenuSelected = nil,
 		Toggle = true,
 		Signal = Instance.new('BindableEvent');
@@ -3330,15 +3355,15 @@ function Fatality.new(Window: Window)
 
 			--Fatalitywin.Enabled = true;
 
-			Fatality:CreateAnimation(InfoButton,0.35,{
+			Fatality:CreateAnimation(InfoButton,0.25,{
 				ImageTransparency = 0.5
 			})
 
-			Fatality:CreateAnimation(SearchButton,0.35,{
+			Fatality:CreateAnimation(SearchButton,0.25,{
 				ImageTransparency = 0.5
 			})
 
-			Fatality:CreateAnimation(SaveButton,0.35,{
+			Fatality:CreateAnimation(SaveButton,0.25,{
 				ImageTransparency = 0.5
 			})
 
@@ -3367,21 +3392,17 @@ function Fatality.new(Window: Window)
 				Transparency = 0.900
 			})
 
-			task.delay(0.3,function()
-				if Fatal.Toggle then
-					Fatality:CreateAnimation(InfoButton,0.65,Enum.EasingStyle.Back,{
-						Position = UDim2.new(1, -5,0.5, 0)
-					})
+			Fatality:CreateAnimation(InfoButton,0.1,Enum.EasingStyle.Back,{
+				Position = UDim2.new(1, -5,0.5, 0)
+			})
 
-					Fatality:CreateAnimation(SearchButton,0.35,Enum.EasingStyle.Back,{
-						Position = UDim2.new(0,10,0.5, 0)
-					})
+			Fatality:CreateAnimation(SearchButton,0.1,Enum.EasingStyle.Back,{
+				Position = UDim2.new(0,10,0.5, 0)
+			})
 
-					Fatality:CreateAnimation(SaveButton,0.45,Enum.EasingStyle.Back,{
-						Position = UDim2.new(0,35,0.5, 0)
-					})
-				end;
-			end)
+			Fatality:CreateAnimation(SaveButton,0.1,Enum.EasingStyle.Back,{
+				Position = UDim2.new(0,35,0.5, 0)
+			})
 
 			Fatality:CreateAnimation(DropShadow,0.35,{
 				ImageTransparency = 0.75
@@ -3735,7 +3756,7 @@ function Fatality.new(Window: Window)
 		Menu = Menu or {};
 		Menu.Name = Menu.Name or "EXAMPLE";
 		Menu.Icon = Menu.Icon or "eye";
-
+		
 		local MenuLib = {};
 		local MenuButton = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
@@ -3994,7 +4015,13 @@ function Fatality.new(Window: Window)
 		end;
 
 		table.insert(Fatal.Menus,_B)
-
+		
+		table.insert(Fatal.ElementContents,{
+			Name = Menu.Name,
+			Path = Menu.Name,
+			_TAB = _B
+		});
+		
 		Fatality:CreateHover(MenuButton,function(bool)
 			if Fatal.MenuSelected.Root ~= MenuLiber then
 				if bool then
@@ -4044,7 +4071,13 @@ function Fatality.new(Window: Window)
 			Config.Name = Config.Name or "SECTION";
 			Config.Position = Config.Position or "center";
 			Config.Height = Config.Height or 0;
-
+			
+			table.insert(Fatal.ElementContents,{
+				Name = Config.Name,
+				Path = Menu.Name .. " > ".. Config.Name,
+				_TAB = _B
+			});
+			
 			local Section = Instance.new("Frame")
 			local Elements = Instance.new("Frame")
 			local UIStroke = Instance.new("UIStroke")
@@ -4144,7 +4177,16 @@ function Fatality.new(Window: Window)
 
 			BindEvent.Event:Connect(Toggle);
 
-			return Fatality:CreateElements(Elements,Elements.ZIndex,BindEvent);
+			return Fatality:CreateElements(Elements,Elements.ZIndex,BindEvent,{
+				Path = Menu.Name .. " > ".. Config.Name,
+				Memory = function(Name)
+					table.insert(Fatal.ElementContents,{
+						Name = Name,
+						Path = Menu.Name .. " > ".. Config.Name .. " > " .. Name,
+						_TAB = _B
+					});
+				end,
+			});
 		end;
 
 		return MenuLib;
@@ -4221,6 +4263,328 @@ function Fatality.new(Window: Window)
 		function Fatal:AddInfo(callback)
 			InfoButton.MouseButton1Click:Connect(callback);
 		end;
+	end;
+	
+	do
+		local SearchFrame = Instance.new("Frame")
+		local UIStroke = Instance.new("UIStroke")
+		local UICorner = Instance.new("UICorner")
+		local DropShadow = Instance.new("ImageLabel")
+		local SearchBox = Instance.new("Frame")
+		local UICorner_2 = Instance.new("UICorner")
+		local UIStroke_2 = Instance.new("UIStroke")
+		local TextBox = Instance.new("TextBox")
+		local ScrollingFrame = Instance.new("ScrollingFrame")
+		local UIListLayout = Instance.new("UIListLayout")
+		
+		local SearchToggle = function(value)
+			if value then
+				SearchFrame.Position = UDim2.fromOffset(SearchButton.AbsolutePosition.X - 5,SearchButton.AbsolutePosition.Y + (SearchButton.AbsoluteSize.Y * 3))
+				
+				Fatality:CreateAnimation(SearchFrame,0.35,{
+					Size = UDim2.new(0, 245, 0, 245)
+				})
+				
+				Fatality:CreateAnimation(DropShadow,0.35,{
+					ImageTransparency = 0.750
+				})
+				
+				Fatality:CreateAnimation(SearchBox,0.35,{
+					BackgroundTransparency = 0
+				})
+				
+				Fatality:CreateAnimation(UIStroke_2,0.5,{
+					Transparency = 0.650
+				})
+				
+				Fatality:CreateAnimation(UIStroke,0.5,{
+					Transparency = 0
+				})
+
+				Fatality:CreateAnimation(TextBox,0.5,{
+					TextTransparency = 0
+				})
+				
+				Fatality:CreateAnimation(TextBox,0.5,{
+					TextTransparency = 0
+				})
+			else
+				Fatality:CreateAnimation(UIStroke,0.5,{
+					Transparency = 1
+				})
+				
+				Fatality:CreateAnimation(SearchFrame,0.35,{
+					Size = UDim2.new(0, 245, 0, 0)
+				})
+
+				Fatality:CreateAnimation(DropShadow,0.35,{
+					ImageTransparency = 1
+				})
+
+				Fatality:CreateAnimation(SearchBox,0.5,{
+					BackgroundTransparency = 1
+				})
+
+				Fatality:CreateAnimation(UIStroke_2,0.5,{
+					Transparency = 1
+				})
+
+				Fatality:CreateAnimation(TextBox,0.5,{
+					TextTransparency = 1
+				})
+
+				Fatality:CreateAnimation(TextBox,0.5,{
+					TextTransparency = 1
+				})
+				
+				table.foreach(ScrollingFrame:GetChildren(),function(i,v)
+					if v:IsA('Frame') then
+						v:Destroy();
+					end;
+				end);
+			end;
+		end;
+		
+		SearchFrame.Name = "SearchFrame"
+		SearchFrame.Parent = Fatalitywin;
+		SearchFrame.AnchorPoint = Vector2.new(0, 1)
+		SearchFrame.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
+		SearchFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		SearchFrame.BorderSizePixel = 0
+		SearchFrame.Position = UDim2.new(4,0,4,0)
+		SearchFrame.Size = UDim2.new(0, 245, 0, 245)
+		SearchFrame.ZIndex = 100
+		SearchFrame.ClipsDescendants = true
+
+		UIStroke.Color = Color3.fromRGB(29, 29, 29)
+		UIStroke.Parent = SearchFrame
+
+		UICorner.CornerRadius = UDim.new(0, 2)
+		UICorner.Parent = SearchFrame
+
+		DropShadow.Name = "DropShadow"
+		DropShadow.Parent = SearchFrame
+		DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+		DropShadow.BackgroundTransparency = 1.000
+		DropShadow.BorderSizePixel = 0
+		DropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+		DropShadow.Rotation = 0.010
+		DropShadow.Size = UDim2.new(1, 47, 1, 47)
+		DropShadow.ZIndex = 99
+		DropShadow.Image = "rbxassetid://6014261993"
+		DropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+		DropShadow.ImageTransparency = 0.750
+		DropShadow.ScaleType = Enum.ScaleType.Slice
+		DropShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+
+		SearchBox.Name = "SearchBox"
+		SearchBox.Parent = SearchFrame
+		SearchBox.AnchorPoint = Vector2.new(0.5, 0)
+		SearchBox.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+		SearchBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		SearchBox.BorderSizePixel = 0
+		SearchBox.Position = UDim2.new(0.5, 0, 0, 9)
+		SearchBox.Size = UDim2.new(1, -15, 0, 25)
+		SearchBox.ZIndex = 101
+
+		UICorner_2.CornerRadius = UDim.new(0, 2)
+		UICorner_2.Parent = SearchBox
+
+		UIStroke_2.Transparency = 0.650
+		UIStroke_2.Color = Color3.fromRGB(29, 29, 29)
+		UIStroke_2.Parent = SearchBox
+
+		TextBox.Parent = SearchBox
+		TextBox.AnchorPoint = Vector2.new(0.5, 0.5)
+		TextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		TextBox.BackgroundTransparency = 1.000
+		TextBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		TextBox.BorderSizePixel = 0
+		TextBox.Position = UDim2.new(0.5, 0, 0.5, 0)
+		TextBox.Size = UDim2.new(1, -15, 1, -5)
+		TextBox.ZIndex = 102
+		TextBox.ClearTextOnFocus = false
+		TextBox.FontFace = Fatality.FontSemiBold;
+		TextBox.PlaceholderText = "Search"
+		TextBox.Text = ""
+		TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+		TextBox.TextSize = 12.000
+		TextBox.TextXAlignment = Enum.TextXAlignment.Left
+
+		ScrollingFrame.Parent = SearchFrame
+		ScrollingFrame.Active = true
+		ScrollingFrame.AnchorPoint = Vector2.new(0.5, 0)
+		ScrollingFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		ScrollingFrame.BackgroundTransparency = 1.000
+		ScrollingFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		ScrollingFrame.BorderSizePixel = 0
+		ScrollingFrame.Position = UDim2.new(0.5, 0, 0, 40)
+		ScrollingFrame.Size = UDim2.new(1, -15, 1, -45)
+		ScrollingFrame.ZIndex = 102
+		ScrollingFrame.ScrollBarThickness = 0
+
+		UIListLayout.Parent = ScrollingFrame
+		UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		UIListLayout.Padding = UDim.new(0, 4)
+		
+		UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
+			ScrollingFrame.CanvasSize = UDim2.fromOffset(0,UIListLayout.AbsoluteContentSize.Y)
+		end)
+		
+		SearchToggle(false);
+		
+		Fatality:CreateHover(SearchButton,function(bool)
+			if bool then
+				Fatality:CreateAnimation(SearchButton,0.5,{
+					ImageTransparency = 0.1
+				})
+			else
+				Fatality:CreateAnimation(SearchButton,0.5,{
+					ImageTransparency = 0.5
+				})
+			end	
+		end);
+		
+		local SearchInformation = {};
+		
+		local get_button = function(Name,Path,TAB_WARP)
+			local ResultFrame = Instance.new("Frame")
+			local UICorner = Instance.new("UICorner")
+			local FeatureName = Instance.new("TextLabel")
+			local FeaturePath = Instance.new("TextLabel")
+
+			ResultFrame.Name = "ResultFrame"
+			ResultFrame.Parent = ScrollingFrame;
+			ResultFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+			ResultFrame.BackgroundTransparency = 1.000
+			ResultFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			ResultFrame.BorderSizePixel = 0
+			ResultFrame.Size = UDim2.new(1, 0, 0, 42)
+			ResultFrame.ZIndex = 103
+
+			UICorner.CornerRadius = UDim.new(0, 4)
+			UICorner.Parent = ResultFrame
+
+			FeatureName.Name = "FeatureName"
+			FeatureName.Parent = ResultFrame
+			FeatureName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			FeatureName.BackgroundTransparency = 1.000
+			FeatureName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			FeatureName.BorderSizePixel = 0
+			FeatureName.Position = UDim2.new(0, 6, 0, 5)
+			FeatureName.Size = UDim2.new(1, 0, 0, 15)
+			FeatureName.ZIndex = 104
+			FeatureName.FontFace = Fatality.FontSemiBold
+			FeatureName.Text = Name
+			FeatureName.TextColor3 = Color3.fromRGB(255, 255, 255)
+			FeatureName.TextSize = 14.000
+			FeatureName.TextXAlignment = Enum.TextXAlignment.Left
+			
+			FeaturePath.Name = "FeaturePath"
+			FeaturePath.Parent = ResultFrame
+			FeaturePath.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			FeaturePath.BackgroundTransparency = 1.000
+			FeaturePath.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			FeaturePath.BorderSizePixel = 0
+			FeaturePath.Position = UDim2.new(0, 6, 0, 22)
+			FeaturePath.Size = UDim2.new(1, 0, 0, 15)
+			FeaturePath.ZIndex = 104
+			FeaturePath.FontFace = Fatality.FontSemiBold
+			FeaturePath.Text = Path
+			FeaturePath.TextColor3 = Color3.fromRGB(255, 255, 255)
+			FeaturePath.TextSize = 12.000
+			FeaturePath.TextTransparency = 0.500
+			FeaturePath.TextXAlignment = Enum.TextXAlignment.Left
+			
+			local button = Fatality:NewInput(ResultFrame);
+			
+			Fatality:CreateHover(button,function(bool)
+				if bool then
+					Fatality:CreateAnimation(ResultFrame,0.5,{
+						BackgroundTransparency = 0
+					})
+				else
+					Fatality:CreateAnimation(ResultFrame,0.5,{
+						BackgroundTransparency = 1
+					})
+				end	
+			end);
+			
+			button.MouseButton1Click:Connect(function()
+				if TAB_WARP then
+					for i,v in next , Fatal.Menus do
+						if v.Root == TAB_WARP.Root then
+							Fatal.MenuSelected = v;
+							v.ValueSelect(true)
+						else
+							v.ValueSelect(false)
+						end;
+					end;
+				end;
+			end);
+			
+			return ResultFrame;
+		end
+		
+		SearchButton.MouseButton1Click:Connect(function()
+			TextBox.Text = "";
+			
+			SearchToggle(true);
+			
+			table.clear(SearchInformation);
+			
+			table.foreach(ScrollingFrame:GetChildren(),function(i,v)
+				if v:IsA('Frame') then
+					v:Destroy();
+				end;
+			end);
+			
+			table.foreach(Fatal.ElementContents,function(i,v)
+				local button = get_button(v.Name,v.Path,v._TAB);
+				
+				SearchInformation[v.Path.." - "..Fatality:RandomString()] = {
+					root = button,
+					callback = function()
+						print(v.Path,v.Name)
+					end,
+				};
+			end);
+		end)
+		
+		local DearchDelay = tick();
+		
+		TextBox:GetPropertyChangedSignal('Text'):Connect(function()
+			DearchDelay = tick();
+			
+			if not TextBox.Text:byte() then
+				for i,v in next , SearchInformation do
+					v.root.Visible = true;
+				end;
+				
+				return;
+			end;
+			
+			task.delay(0.5,function()
+				if (tick() - DearchDelay) > 0.5 then
+					for i,v in next , SearchInformation do
+						if string.find(tostring(string.lower(i)),string.lower(TextBox.Text),1,true) then
+							v.root.Visible = true;
+						else
+							v.root.Visible = false;
+						end;
+					end;
+				end;
+			end)
+		end);
+		
+		UserInputService.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				if not Fatality:IsMouseOverFrame(SearchFrame) then
+					SearchToggle(false);
+				end
+			end
+		end)
 	end;
 
 	function Fatal:GetButton()
@@ -4560,7 +4924,7 @@ function Fatality:Loader(Config: Loader)
 		local StartText = Instance.new("TextLabel")
 		local UIGradient = Instance.new("UIGradient")
 		local UIScale = Instance.new("UIScale")
-
+	
 		StartText.Name = Fatality:RandomString()
 		StartText.Parent = Loader
 		StartText.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -4579,8 +4943,9 @@ function Fatality:Loader(Config: Loader)
 		StartText.TextTransparency = 1;
 
 		local textsize = Fatality:GetTextSize(StartText);
-
-		StartText.Size = UDim2.new(0, textsize.X, 0, 50)
+		local baseSIZX = textsize.X;
+		
+		StartText.Size = UDim2.new(0, baseSIZX + 100, 0, 50)
 
 		UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 116, 116)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(132, 58, 58))}
 		UIGradient.Rotation = 88
@@ -4600,7 +4965,7 @@ function Fatality:Loader(Config: Loader)
 		task.wait(0.45);
 
 		Fatality:CreateAnimation(StartText,0.35,{
-			Position = UDim2.fromOffset(PosText[1].Frame.AbsolutePosition.X + (StartText.AbsoluteSize.X / 2),PosText[1].Frame.AbsolutePosition.Y + (PosText[1].Frame.AbsoluteSize.Y / 2) + math.abs(Loader.AbsolutePosition.Y))
+			Position = UDim2.fromOffset(PosText[1].Frame.AbsolutePosition.X + (PosText[1].Frame.AbsoluteSize.X / 2),PosText[1].Frame.AbsolutePosition.Y + (PosText[1].Frame.AbsoluteSize.Y / 2) + math.abs(Loader.AbsolutePosition.Y))
 		})
 
 		task.wait(0.5);
