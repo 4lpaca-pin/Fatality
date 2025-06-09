@@ -23,6 +23,7 @@ export type Loader = {
 export type Menu = {
 	Name: string,
 	Icon: string,
+	AutoFill: boolean
 }
 
 export type Section = {
@@ -125,18 +126,18 @@ export type Notifier = {
 
 -- Exploit Environments --
 cloneref = cloneref or function(i) return i; end;
-cloenfunction = cloenfunction or function(...) return ...; end;
+clonefunction = clonefunction or function(...) return ...; end;
 hookfunction = hookfunction or function(a,b) return a; end;
 getgenv = getgenv or getfenv;
 protect_gui = protect_gui or protectgui or (syn and syn.protect_gui) or function() end;
 getgenv().LPH_NO_VIRTUALIZE = LPH_NO_VIRTUALIZE or function(f) return f end;
 
 -- Services --
-local TextService = game:GetService('TextService');
-local TweenService = game:GetService('TweenService');
-local RunService = game:GetService('RunService');
-local Players = game:GetService('Players');
-local UserInputService = game:GetService('UserInputService');
+local TextService = cloneref(game:GetService('TextService'));
+local TweenService = cloneref(game:GetService('TweenService'));
+local RunService = cloneref(game:GetService('RunService'));
+local Players = cloneref(game:GetService('Players'));
+local UserInputService = cloneref(game:GetService('UserInputService'));
 local Client = Players.LocalPlayer;
 local Mouse = Client:GetMouse();
 local CurrentCamera = workspace.CurrentCamera;
@@ -154,7 +155,7 @@ Fatality.GLOBAL_ENVIRONMENT = {};
 Fatality.Windows = {};
 Fatality.FontSemiBold = Font.new('rbxasset://fonts/families/GothamSSm.json',Enum.FontWeight.SemiBold,Enum.FontStyle.Normal);
 Fatality.Flags = {};
-Fatality.Version = '1.4';
+Fatality.Version = '1.5';
 Fatality.Lucide = {
 	["lucide-accessibility"] = "rbxassetid://10709751939",
 	["lucide-activity"] = "rbxassetid://10709752035",
@@ -2193,11 +2194,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local UICorner = Instance.new("UICorner")
 		local ValueIcon = Instance.new("ImageLabel")
 		local OptionButton = Instance.new("ImageButton")
-		
+
 		if SearchAPI then
 			SearchAPI.Memory(Config.Name);
 		end;
-		
+
 		Toggle.Name = Fatality:RandomString()
 		Toggle.Parent = Parent
 		Toggle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2393,11 +2394,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local boxli = Instance.new("Frame")
 		local UICorner_2 = Instance.new("UICorner")
 		local ValueText = Instance.new("TextLabel")
-		
+
 		if SearchAPI then
 			SearchAPI.Memory(Config.Name);
 		end;
-		
+
 		Slider.Name = Fatality:RandomString()
 		Slider.Parent = Parent
 		Slider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2423,7 +2424,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Slider_Name.TextSize = 13.000
 		Slider_Name.TextTransparency = 0.200
 		Slider_Name.TextXAlignment = Enum.TextXAlignment.Left
-
+		
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = Slider
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
@@ -2610,11 +2611,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local Button = Instance.new("Frame")
 		local Button_Name = Instance.new("TextLabel")
 		local UICorner = Instance.new("UICorner")
-		
+
 		if SearchAPI then
 			SearchAPI.Memory(Config.Name);
 		end;
-		
+
 		Button.Name = Fatality:RandomString()
 		Button.Parent = Parent
 		Button.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
@@ -2704,11 +2705,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local ValueFrame = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
 		local OptionButton = Instance.new("ImageButton")
-		
+
 		if SearchAPI then
 			SearchAPI.Memory(Config.Name);
 		end;
-		
+
 		ColorPicker.Name = Fatality:RandomString()
 		ColorPicker.Parent = Parent
 		ColorPicker.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2862,11 +2863,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local OptionButton = Instance.new("ImageButton")
 		local icon = Instance.new("ImageLabel")
 		local Value_Text = Instance.new("TextLabel")
-		
+
 		if SearchAPI then
 			SearchAPI.Memory(Config.Name);
 		end;
-		
+
 		Dropdown.Name = Fatality:RandomString()
 		Dropdown.Parent = Parent
 		Dropdown.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -3105,11 +3106,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local UICorner = Instance.new("UICorner")
 		local OptionButton = Instance.new("ImageButton")
 		local ValueText = Instance.new("TextLabel")
-		
+
 		if SearchAPI then
 			SearchAPI.Memory(Config.Name);
 		end;
-		
+
 		Keybind.Name = Fatality:RandomString()
 		Keybind.Parent = Parent
 		Keybind.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -3163,7 +3164,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		OptionButton.Image = "http://www.roblox.com/asset/?id=14007344336"
 		OptionButton.ImageTransparency = 0.600
 		OptionButton.Visible = Config.Option or false;
-		
+
 		ValueText.Name = Fatality:RandomString()
 		ValueText.Parent = ValueFrame
 		ValueText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -3768,7 +3769,8 @@ function Fatality.new(Window: Window)
 		Menu = Menu or {};
 		Menu.Name = Menu.Name or "EXAMPLE";
 		Menu.Icon = Menu.Icon or "eye";
-		
+		Menu.AutoFill = (Menu.AutoFill == nil and true) or false;
+
 		local MenuLib = {};
 		local MenuButton = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
@@ -3839,10 +3841,6 @@ function Fatality.new(Window: Window)
 		local Right = Instance.new("ScrollingFrame")
 		local UIListLayout_3 = Instance.new("UIListLayout")
 
-		Fatality:ScrollSignal(Right,UIListLayout_3,'Y');
-		Fatality:ScrollSignal(Center,UIListLayout_2,'Y');
-		Fatality:ScrollSignal(Left,UIListLayout,'Y');
-
 		MenuLiber.Name = Fatality:RandomString()
 		MenuLiber.Parent = MenuFrame
 		MenuLiber.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -3852,7 +3850,7 @@ function Fatality.new(Window: Window)
 		MenuLiber.ClipsDescendants = true
 		MenuLiber.Size = UDim2.new(1, 0, 1, 0)
 		MenuLiber.ZIndex = 7
-
+		
 		Left.Name = Fatality:RandomString()
 		Left.Parent = MenuLiber
 		Left.Active = true
@@ -3865,12 +3863,13 @@ function Fatality.new(Window: Window)
 		Left.Position = UDim2.new(0.175, 0, 0.5, 0)
 		Left.Size = UDim2.new(0.32, 0, 1, -5)
 		Left.ScrollBarThickness = 0
-
+		
 		UIListLayout.Parent = Left
 		UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout.Padding = UDim.new(0, 5)
-
+		UIListLayout.VerticalFlex = (Menu.AutoFill and Enum.UIFlexAlignment.Fill) or Enum.UIFlexAlignment.None;
+		
 		Center.Name = Fatality:RandomString()
 		Center.Parent = MenuLiber
 		Center.Active = true
@@ -3888,6 +3887,7 @@ function Fatality.new(Window: Window)
 		UIListLayout_2.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout_2.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout_2.Padding = UDim.new(0, 5)
+		UIListLayout_2.VerticalFlex = (Menu.AutoFill and Enum.UIFlexAlignment.Fill) or Enum.UIFlexAlignment.None;
 
 		Right.Name = Fatality:RandomString()
 		Right.Parent = MenuLiber
@@ -3906,10 +3906,21 @@ function Fatality.new(Window: Window)
 		UIListLayout_3.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout_3.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout_3.Padding = UDim.new(0, 5)
+		UIListLayout_3.VerticalFlex = (Menu.AutoFill and Enum.UIFlexAlignment.Fill) or Enum.UIFlexAlignment.None;
 
 		local BindEvent = Instance.new('BindableEvent',MenuLiber);
 		BindEvent.Name = Fatality:RandomString();
-
+		
+		if not Menu.AutoFill then
+			Fatality:ScrollSignal(Right,UIListLayout_3,'Y');
+			Fatality:ScrollSignal(Center,UIListLayout_2,'Y');
+			Fatality:ScrollSignal(Left,UIListLayout,'Y');
+		else
+			Right.CanvasSize = UDim2.new(0,0,0,0);
+			Left.CanvasSize = UDim2.new(0,0,0,0);
+			Center.CanvasSize = UDim2.new(0,0,0,0);
+		end;
+		
 		Fatal.Signal.Event:Connect(function(Bool)
 			if Bool then
 				Fatality:CreateAnimation(MenuButton,0.5,{
@@ -4027,7 +4038,7 @@ function Fatality.new(Window: Window)
 		end;
 
 		table.insert(Fatal.Menus,_B)
-		
+
 		Fatality:CreateHover(MenuButton,function(bool)
 			if Fatal.MenuSelected.Root ~= MenuLiber then
 				if bool then
@@ -4071,7 +4082,7 @@ function Fatality.new(Window: Window)
 				end;
 			end;
 		end);
-		
+
 		function MenuLib:AddListBox(Config : Listbox)
 			Config = Config or {};
 			Config.Name = Config.Name or "LIST BOX";
@@ -4081,13 +4092,13 @@ function Fatality.new(Window: Window)
 			Config.Multi = Config.Multi or false;
 			Config.Default = Config.Default or ((Config.Multi and nil) or {});
 			Config.Callback = Config.Callback or function() end;
-			
+
 			table.insert(Fatal.ElementContents,{
 				Name = Config.Name,
 				Path = Menu.Name .. " > ".. Config.Name,
 				_TAB = _B
 			});
-			
+
 			local ListBox = Instance.new("Frame")
 			local Elements = Instance.new("Frame")
 			local UIStroke = Instance.new("UIStroke")
@@ -4113,12 +4124,12 @@ function Fatality.new(Window: Window)
 			ListBox.Size = UDim2.new(1, 0, 0, 350)
 			ListBox.ZIndex = 10
 			ListBox.ClipsDescendants = true;
-
+			
 			Elements.Name = Fatality:RandomString()
 			Elements.Parent = ListBox
 			Elements.AnchorPoint = Vector2.new(0.5, 1)
-			Elements.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			Elements.BackgroundTransparency = 1.000
+			Elements.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+			Elements.BackgroundTransparency = 0
 			Elements.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			Elements.BorderSizePixel = 0
 			Elements.Position = UDim2.new(0.5, 0, 1, -1)
@@ -4178,7 +4189,7 @@ function Fatality.new(Window: Window)
 			OptionButton.Image = "http://www.roblox.com/asset/?id=14007344336"
 			OptionButton.ImageTransparency = 0.600
 			OptionButton.Visible = Config.Option or false;
-			
+
 			ScrollingFrame.Parent = Elements
 			ScrollingFrame.Active = true
 			ScrollingFrame.AnchorPoint = Vector2.new(0.5, 0)
@@ -4204,11 +4215,17 @@ function Fatality.new(Window: Window)
 			
 			UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 				local all = (#ScrollingFrame:GetChildren() - 1);
+				local scale = math.clamp((all * (10 + UIListLayout.Padding.Offset)) + (Config.Height + UIListLayout.Padding.Offset),25,400);
 				
-				ListBox.Size = UDim2.new(1,0,0,math.clamp((all * (10 + UIListLayout.Padding.Offset)) + (Config.Height + UIListLayout.Padding.Offset),25,400));
+				if Menu.AutoFill then
+					ListBox.Size = UDim2.new(1,0,0,scale / 2.5);
+				else
+					ListBox.Size = UDim2.new(1,0,0,scale);
+				end;
+				
 				ScrollingFrame.CanvasSize = UDim2.fromOffset(0,UIListLayout.AbsoluteContentSize.Y);
 			end)
-
+			
 			SpaceBox.Name = Fatality:RandomString()
 			SpaceBox.Parent = ScrollingFrame
 			SpaceBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -4231,7 +4248,7 @@ function Fatality.new(Window: Window)
 			ListName.TextSize = 15.000
 			ListName.TextStrokeTransparency = 0.750
 			ListName.TextXAlignment = Enum.TextXAlignment.Left
-			
+
 			local new_button = function()
 				local db_selected = Instance.new("TextButton")
 
@@ -4250,7 +4267,7 @@ function Fatality.new(Window: Window)
 
 				return db_selected;
 			end;
-			
+
 			local Toggle = function(v)
 				if v then
 					Fatality:CreateAnimation(ListBox,0.5,{
@@ -4260,11 +4277,11 @@ function Fatality.new(Window: Window)
 					Fatality:CreateAnimation(UIStroke,0.5,{
 						Transparency = 0
 					})
-					
+
 					Fatality:CreateAnimation(UIStroke_2,0.5,{
 						Transparency = 0.75
 					})
-					
+
 					Fatality:CreateAnimation(UIStroke_3,0.5,{
 						Transparency = 0.75
 					})
@@ -4272,20 +4289,20 @@ function Fatality.new(Window: Window)
 					Fatality:CreateAnimation(SearchBox,0.5,{
 						BackgroundTransparency = 0
 					})
-					
+
 					Fatality:CreateAnimation(TextBox,0.5,{
 						TextTransparency = 0
 					})
-					
+
 					Fatality:CreateAnimation(OptionButton,0.45,{
 						ImageTransparency = (Config.Option and 0.6) or 1,
 					})
-					
+
 					Fatality:CreateAnimation(ScrollingFrame,0.45,{
 						BackgroundTransparency = 0,
 						Position = UDim2.new(0.5, 0, 0, 40)
 					})
-					
+
 					table.foreach(ScrollingFrame:GetChildren(),function(i,v)
 						if v:IsA('TextButton') then
 							Fatality:CreateAnimation(v,0.45,{
@@ -4299,7 +4316,7 @@ function Fatality.new(Window: Window)
 						TextTransparency = 0
 					})
 				else
-					
+
 					table.foreach(ScrollingFrame:GetChildren(),function(i,v)
 						if v:IsA('TextButton') then
 							Fatality:CreateAnimation(v,0.45,{
@@ -4307,7 +4324,7 @@ function Fatality.new(Window: Window)
 							});
 						end;
 					end);
-					
+
 					Fatality:CreateAnimation(ListBox,0.5,{
 						BackgroundTransparency = 1
 					})
@@ -4347,11 +4364,11 @@ function Fatality.new(Window: Window)
 					})
 				end
 			end;
-			
+
 			Toggle(BindEvent:GetAttribute('V'));
 
 			BindEvent.Event:Connect(Toggle);
-			
+
 			local DearchDelay = tick();
 
 			TextBox:GetPropertyChangedSignal('Text'):Connect(function()
@@ -4395,7 +4412,7 @@ function Fatality.new(Window: Window)
 					for i,v in next , Config.Values do
 						local bth = new_button();
 
-						bth.Text = tostring(v);
+						bth.Text = string.rep(" ",2)..tostring(v);
 
 						bth.Parent = ScrollingFrame;
 
@@ -4404,14 +4421,14 @@ function Fatality.new(Window: Window)
 								Config.Default[v] = true
 								bth.TextColor3 = Color3.fromRGB(255, 106, 133);
 								bth.TextTransparency = 0;
-								
+
 							else
 								bth.TextColor3 = Color3.fromRGB(255, 255, 255);
 								bth.TextTransparency = 0.5;
 
 								Config.Default[v] = false
 							end;
-							
+
 							Fatality:CreateHover(bth,function(bool)
 								if not Config.Default[v] then
 									if bool then
@@ -4452,7 +4469,7 @@ function Fatality.new(Window: Window)
 								bth.TextColor3 = Color3.fromRGB(255, 255, 255);
 								bth.TextTransparency = 0.5;
 							end;
-							
+
 							Fatality:CreateHover(bth,function(bool)
 								if Config.Default ~= v then
 									if bool then
@@ -4466,13 +4483,13 @@ function Fatality.new(Window: Window)
 									end;
 								end;
 							end)
-							
+
 							bth.MouseButton1Click:Connect(function()
 								if selectedmem then
 									selectedmem.TextColor3 = Color3.fromRGB(255, 255, 255);
 									selectedmem.TextTransparency = 0.5;
 								end;
-								
+
 								bth.TextTransparency = 0;
 								bth.TextColor3 = Color3.fromRGB(255, 106, 133);
 								selectedmem = bth;
@@ -4482,7 +4499,7 @@ function Fatality.new(Window: Window)
 							end)
 						end;
 					end;
-					
+
 					Config.Callback(Config.Default);
 				end,
 				SetValues = function(value)
@@ -4493,9 +4510,9 @@ function Fatality.new(Window: Window)
 				end,
 				Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
 			});
-			
+
 			res:Refresh();
-			
+
 			return res;
 		end;
 
@@ -4504,13 +4521,13 @@ function Fatality.new(Window: Window)
 			Config.Name = Config.Name or "SECTION";
 			Config.Position = Config.Position or "center";
 			Config.Height = Config.Height or 0;
-			
+	
 			table.insert(Fatal.ElementContents,{
 				Name = Config.Name,
 				Path = Menu.Name .. " > ".. Config.Name,
 				_TAB = _B
 			});
-			
+
 			local Section = Instance.new("Frame")
 			local Elements = Instance.new("Frame")
 			local UIStroke = Instance.new("UIStroke")
@@ -4560,8 +4577,8 @@ function Fatality.new(Window: Window)
 			Elements.Name = Fatality:RandomString()
 			Elements.Parent = Section
 			Elements.AnchorPoint = Vector2.new(0.5, 1)
-			Elements.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			Elements.BackgroundTransparency = 1.000
+			Elements.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+			Elements.BackgroundTransparency = 0
 			Elements.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			Elements.BorderSizePixel = 0
 			Elements.Position = UDim2.new(0.5, 0, 1, -1)
@@ -4599,11 +4616,18 @@ function Fatality.new(Window: Window)
 			SectionName.TextSize = 15.000
 			SectionName.TextStrokeTransparency = 0.750
 			SectionName.TextXAlignment = Enum.TextXAlignment.Left
+			
 
 			UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-				Fatality:CreateAnimation(Section,0.25,{
-					Size = UDim2.new(1, 0, 0, UIListLayout.AbsoluteContentSize.Y + 20 + Config.Height)
-				})
+				local MainScale = UIListLayout.AbsoluteContentSize.Y + 20 + Config.Height;
+				
+				if not Menu.AutoFill then
+					Fatality:CreateAnimation(Section,0.25,{
+						Size = UDim2.new(1, 0, 0, MainScale)
+					})
+				else
+					Section.Size = UDim2.new(1,0,0,MainScale / 2.5);
+				end;
 			end);
 
 			Toggle(BindEvent:GetAttribute('V'));
@@ -4697,7 +4721,7 @@ function Fatality.new(Window: Window)
 			InfoButton.MouseButton1Click:Connect(callback);
 		end;
 	end;
-	
+
 	do
 		local SearchFrame = Instance.new("Frame")
 		local UIStroke = Instance.new("UIStroke")
@@ -4709,27 +4733,28 @@ function Fatality.new(Window: Window)
 		local TextBox = Instance.new("TextBox")
 		local ScrollingFrame = Instance.new("ScrollingFrame")
 		local UIListLayout = Instance.new("UIListLayout")
+		local searchScale = UDim2.new(0, 295, 0, 295);
 		
 		local SearchToggle = function(value)
 			if value then
 				SearchFrame.Position = UDim2.fromOffset(SearchButton.AbsolutePosition.X - 5,SearchButton.AbsolutePosition.Y + (SearchButton.AbsoluteSize.Y * 3))
-				
+
 				Fatality:CreateAnimation(SearchFrame,0.35,{
-					Size = UDim2.new(0, 245, 0, 245)
+					Size = searchScale
 				})
-				
+
 				Fatality:CreateAnimation(DropShadow,0.35,{
 					ImageTransparency = 0.750
 				})
-				
+
 				Fatality:CreateAnimation(SearchBox,0.35,{
 					BackgroundTransparency = 0
 				})
-				
+
 				Fatality:CreateAnimation(UIStroke_2,0.5,{
 					Transparency = 0.650
 				})
-				
+
 				Fatality:CreateAnimation(UIStroke,0.5,{
 					Transparency = 0
 				})
@@ -4737,7 +4762,7 @@ function Fatality.new(Window: Window)
 				Fatality:CreateAnimation(TextBox,0.5,{
 					TextTransparency = 0
 				})
-				
+
 				Fatality:CreateAnimation(TextBox,0.5,{
 					TextTransparency = 0
 				})
@@ -4745,9 +4770,9 @@ function Fatality.new(Window: Window)
 				Fatality:CreateAnimation(UIStroke,0.5,{
 					Transparency = 1
 				})
-				
+
 				Fatality:CreateAnimation(SearchFrame,0.35,{
-					Size = UDim2.new(0, 245, 0, 0)
+					Size = UDim2.new(searchScale.X.Scale, searchScale.X.Offset, 0, 0)
 				})
 
 				Fatality:CreateAnimation(DropShadow,0.35,{
@@ -4769,7 +4794,7 @@ function Fatality.new(Window: Window)
 				Fatality:CreateAnimation(TextBox,0.5,{
 					TextTransparency = 1
 				})
-				
+
 				table.foreach(ScrollingFrame:GetChildren(),function(i,v)
 					if v:IsA('Frame') then
 						v:Destroy();
@@ -4777,7 +4802,7 @@ function Fatality.new(Window: Window)
 				end);
 			end;
 		end;
-		
+
 		SearchFrame.Name = Fatality:RandomString()
 		SearchFrame.Parent = Fatalitywin;
 		SearchFrame.AnchorPoint = Vector2.new(0, 1)
@@ -4785,7 +4810,7 @@ function Fatality.new(Window: Window)
 		SearchFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		SearchFrame.BorderSizePixel = 0
 		SearchFrame.Position = UDim2.new(4,0,4,0)
-		SearchFrame.Size = UDim2.new(0, 245, 0, 245)
+		SearchFrame.Size = searchScale
 		SearchFrame.ZIndex = 100
 		SearchFrame.ClipsDescendants = true
 
@@ -4860,13 +4885,13 @@ function Fatality.new(Window: Window)
 		UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout.Padding = UDim.new(0, 4)
-		
+
 		UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 			ScrollingFrame.CanvasSize = UDim2.fromOffset(0,UIListLayout.AbsoluteContentSize.Y)
 		end)
-		
+
 		SearchToggle(false);
-		
+
 		Fatality:CreateHover(SearchButton,function(bool)
 			if bool then
 				Fatality:CreateAnimation(SearchButton,0.5,{
@@ -4878,16 +4903,16 @@ function Fatality.new(Window: Window)
 				})
 			end	
 		end);
-		
+
 		local SearchInformation = {};
-		
+
 		local get_button = function(Name,Path,TAB_WARP)
 			local ResultFrame = Instance.new("Frame")
 			local UICorner = Instance.new("UICorner")
 			local FeatureName = Instance.new("TextLabel")
 			local FeaturePath = Instance.new("TextLabel")
 
-			ResultFrame.Name = "ResultFrame"
+			ResultFrame.Name = Fatality:RandomString()
 			ResultFrame.Parent = ScrollingFrame;
 			ResultFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
 			ResultFrame.BackgroundTransparency = 1.000
@@ -4899,7 +4924,7 @@ function Fatality.new(Window: Window)
 			UICorner.CornerRadius = UDim.new(0, 4)
 			UICorner.Parent = ResultFrame
 
-			FeatureName.Name = "FeatureName"
+			FeatureName.Name = Fatality:RandomString()
 			FeatureName.Parent = ResultFrame
 			FeatureName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			FeatureName.BackgroundTransparency = 1.000
@@ -4913,8 +4938,8 @@ function Fatality.new(Window: Window)
 			FeatureName.TextColor3 = Color3.fromRGB(255, 255, 255)
 			FeatureName.TextSize = 14.000
 			FeatureName.TextXAlignment = Enum.TextXAlignment.Left
-			
-			FeaturePath.Name = "FeaturePath"
+
+			FeaturePath.Name = Fatality:RandomString()
 			FeaturePath.Parent = ResultFrame
 			FeaturePath.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			FeaturePath.BackgroundTransparency = 1.000
@@ -4929,9 +4954,9 @@ function Fatality.new(Window: Window)
 			FeaturePath.TextSize = 12.000
 			FeaturePath.TextTransparency = 0.500
 			FeaturePath.TextXAlignment = Enum.TextXAlignment.Left
-			
+
 			local button = Fatality:NewInput(ResultFrame);
-			
+
 			Fatality:CreateHover(button,function(bool)
 				if bool then
 					Fatality:CreateAnimation(ResultFrame,0.5,{
@@ -4943,7 +4968,7 @@ function Fatality.new(Window: Window)
 					})
 				end	
 			end);
-			
+
 			button.MouseButton1Click:Connect(function()
 				if TAB_WARP then
 					for i,v in next , Fatal.Menus do
@@ -4956,48 +4981,48 @@ function Fatality.new(Window: Window)
 					end;
 				end;
 			end);
-			
+
 			return ResultFrame;
 		end
-		
+
 		SearchButton.MouseButton1Click:Connect(function()
 			TextBox.Text = "";
-			
+
 			SearchToggle(true);
-			
+
 			table.clear(SearchInformation);
-			
+
 			table.foreach(ScrollingFrame:GetChildren(),function(i,v)
 				if v:IsA('Frame') then
 					v:Destroy();
 				end;
 			end);
-			
+
 			table.foreach(Fatal.ElementContents,function(i,v)
 				local button = get_button(v.Name,v.Path,v._TAB);
-				
+
 				SearchInformation[v.Path.." - "..Fatality:RandomString()] = {
 					root = button,
 					callback = function()
-						print(v.Path,v.Name)
+						
 					end,
 				};
 			end);
 		end)
-		
+
 		local DearchDelay = tick();
-		
+
 		TextBox:GetPropertyChangedSignal('Text'):Connect(function()
 			DearchDelay = tick();
-			
+
 			if not TextBox.Text:byte() then
 				for i,v in next , SearchInformation do
 					v.root.Visible = true;
 				end;
-				
+
 				return;
 			end;
-			
+
 			task.delay(0.5,function()
 				if (tick() - DearchDelay) > 0.5 then
 					for i,v in next , SearchInformation do
@@ -5010,7 +5035,7 @@ function Fatality.new(Window: Window)
 				end;
 			end)
 		end);
-		
+
 		UserInputService.InputBegan:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 				if not Fatality:IsMouseOverFrame(SearchFrame) then
@@ -5038,7 +5063,7 @@ function Fatality.new(Window: Window)
 		local corner_2 = Instance.new("UICorner")
 		local _5 = Instance.new("Frame")
 
-		backpack.Name = "FATALITY";
+		backpack.Name = "FATALITY"..Fatality:RandomString();
 		backpack.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 		backpack.BackgroundTransparency = 1.000
 		backpack.BorderSizePixel = 0
@@ -5162,7 +5187,7 @@ function Fatality.new(Window: Window)
 
 		return backpack;
 	end;
-	
+
 	function Fatal:SetVisible(b)
 		Fatal.Toggle = b;
 		ToggleUI(b);
@@ -5312,7 +5337,7 @@ function Fatality:Loader(Config: Loader)
 		local StartText = Instance.new("TextLabel")
 		local UIGradient = Instance.new("UIGradient")
 		local UIScale = Instance.new("UIScale")
-	
+
 		StartText.Name = Fatality:RandomString()
 		StartText.Parent = Loader
 		StartText.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -5332,7 +5357,7 @@ function Fatality:Loader(Config: Loader)
 
 		local textsize = Fatality:GetTextSize(StartText);
 		local baseSIZX = textsize.X;
-		
+
 		StartText.Size = UDim2.new(0, baseSIZX + 100, 0, 50)
 
 		UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 116, 116)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(132, 58, 58))}
@@ -5434,7 +5459,7 @@ function Fatality:CreateNotifier(): Notifier
 			local HeaderText = Instance.new("TextLabel")
 			local BodyText = Instance.new("TextLabel")
 
-			notify.Name = "notify"
+			notify.Name = Fatality:RandomString()
 			notify.Parent = layout
 			notify.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
 			notify.BackgroundTransparency = 1.000
@@ -5442,7 +5467,7 @@ function Fatality:CreateNotifier(): Notifier
 			notify.BorderSizePixel = 0
 			notify.Size = UDim2.new(0, 0, 0, 0)
 
-			notify_block.Name = "notify_block"
+			notify_block.Name = Fatality:RandomString()
 			notify_block.Parent = notify
 			notify_block.AnchorPoint = Vector2.new(0.5, 0)
 			notify_block.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
@@ -5461,7 +5486,7 @@ function Fatality:CreateNotifier(): Notifier
 			UIStroke.Transparency = 0.900
 			UIStroke.Parent = notify_block
 
-			Icon.Name = "Icon"
+			Icon.Name = Fatality:RandomString()
 			Icon.Parent = notify_block
 			Icon.BackgroundColor3 = Color3.fromRGB(255, 106, 133)
 			Icon.BackgroundTransparency = 1.000
@@ -5473,7 +5498,7 @@ function Fatality:CreateNotifier(): Notifier
 			Icon.ImageColor3 = Color3.fromRGB(255, 106, 133)
 			Icon.ZIndex = 55
 
-			HeaderText.Name = "HeaderText"
+			HeaderText.Name = Fatality:RandomString()
 			HeaderText.Parent = notify_block
 			HeaderText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			HeaderText.BackgroundTransparency = 1.000
@@ -5489,7 +5514,7 @@ function Fatality:CreateNotifier(): Notifier
 			HeaderText.TextTransparency = 0.200
 			HeaderText.TextXAlignment = Enum.TextXAlignment.Left
 
-			BodyText.Name = "BodyText"
+			BodyText.Name = Fatality:RandomString()
 			BodyText.Parent = notify_block
 			BodyText.AnchorPoint = Vector2.new(0, 1)
 			BodyText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -5532,7 +5557,7 @@ function Fatality:CreateNotifier(): Notifier
 
 			updateScale();
 
-			task.delay(Config.Duration + 0.26,function()
+			task.delay(Config.Duration + 0.25,function()
 				Fatality:CreateAnimation(notify_block,0.5,{
 					Position = UDim2.new(2, 100, 0, 0)
 				})
@@ -5550,5 +5575,7 @@ function Fatality:CreateNotifier(): Notifier
 		end,
 	});
 end;
+
+Fatality.FATALITY_PID = Fatality:RandomString();
 
 return Fatality;
