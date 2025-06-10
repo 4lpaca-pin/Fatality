@@ -2424,7 +2424,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Slider_Name.TextSize = 13.000
 		Slider_Name.TextTransparency = 0.200
 		Slider_Name.TextXAlignment = Enum.TextXAlignment.Left
-		
+
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = Slider
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
@@ -3760,6 +3760,14 @@ function Fatality.new(Window: Window)
 			end;
 		end
 	end)
+	
+	function Fatal:SetUsername(name: string)
+		User_name.Text = name or Client.DisplayName;
+	end;
+	
+	function Fatal:SetProfile(icon: string)
+		UserIcon.Image = icon or Players:GetUserThumbnailAsync(Client.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size180x180);
+	end;
 
 	function Fatal:SetExpire(str: string)
 		expire_days.Text = string.format("<font transparency=\"0.5\">expires:</font> <font color=\"#f53174\">%s</font>",str)
@@ -3850,7 +3858,7 @@ function Fatality.new(Window: Window)
 		MenuLiber.ClipsDescendants = true
 		MenuLiber.Size = UDim2.new(1, 0, 1, 0)
 		MenuLiber.ZIndex = 7
-		
+
 		Left.Name = Fatality:RandomString()
 		Left.Parent = MenuLiber
 		Left.Active = true
@@ -3863,13 +3871,13 @@ function Fatality.new(Window: Window)
 		Left.Position = UDim2.new(0.175, 0, 0.5, 0)
 		Left.Size = UDim2.new(0.32, 0, 1, -5)
 		Left.ScrollBarThickness = 0
-		
+
 		UIListLayout.Parent = Left
 		UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout.Padding = UDim.new(0, 5)
 		UIListLayout.VerticalFlex = (Menu.AutoFill and Enum.UIFlexAlignment.Fill) or Enum.UIFlexAlignment.None;
-		
+
 		Center.Name = Fatality:RandomString()
 		Center.Parent = MenuLiber
 		Center.Active = true
@@ -3910,7 +3918,7 @@ function Fatality.new(Window: Window)
 
 		local BindEvent = Instance.new('BindableEvent',MenuLiber);
 		BindEvent.Name = Fatality:RandomString();
-		
+
 		if not Menu.AutoFill then
 			Fatality:ScrollSignal(Right,UIListLayout_3,'Y');
 			Fatality:ScrollSignal(Center,UIListLayout_2,'Y');
@@ -3920,7 +3928,7 @@ function Fatality.new(Window: Window)
 			Left.CanvasSize = UDim2.new(0,0,0,0);
 			Center.CanvasSize = UDim2.new(0,0,0,0);
 		end;
-		
+
 		Fatal.Signal.Event:Connect(function(Bool)
 			if Bool then
 				Fatality:CreateAnimation(MenuButton,0.5,{
@@ -4124,7 +4132,7 @@ function Fatality.new(Window: Window)
 			ListBox.Size = UDim2.new(1, 0, 0, 350)
 			ListBox.ZIndex = 10
 			ListBox.ClipsDescendants = true;
-			
+
 			Elements.Name = Fatality:RandomString()
 			Elements.Parent = ListBox
 			Elements.AnchorPoint = Vector2.new(0.5, 1)
@@ -4212,20 +4220,20 @@ function Fatality.new(Window: Window)
 			UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 			UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			UIListLayout.Padding = UDim.new(0, 5)
-			
+
 			UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 				local all = (#ScrollingFrame:GetChildren() - 1);
 				local scale = math.clamp((all * (10 + UIListLayout.Padding.Offset)) + (Config.Height + UIListLayout.Padding.Offset),25,400);
-				
+
 				if Menu.AutoFill then
 					ListBox.Size = UDim2.new(1,0,0,scale / 2.5);
 				else
 					ListBox.Size = UDim2.new(1,0,0,scale);
 				end;
-				
+
 				ScrollingFrame.CanvasSize = UDim2.fromOffset(0,UIListLayout.AbsoluteContentSize.Y);
 			end)
-			
+
 			SpaceBox.Name = Fatality:RandomString()
 			SpaceBox.Parent = ScrollingFrame
 			SpaceBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -4521,7 +4529,7 @@ function Fatality.new(Window: Window)
 			Config.Name = Config.Name or "SECTION";
 			Config.Position = Config.Position or "center";
 			Config.Height = Config.Height or 0;
-	
+
 			table.insert(Fatal.ElementContents,{
 				Name = Config.Name,
 				Path = Menu.Name .. " > ".. Config.Name,
@@ -4616,11 +4624,11 @@ function Fatality.new(Window: Window)
 			SectionName.TextSize = 15.000
 			SectionName.TextStrokeTransparency = 0.750
 			SectionName.TextXAlignment = Enum.TextXAlignment.Left
-			
+
 
 			UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 				local MainScale = UIListLayout.AbsoluteContentSize.Y + 20 + Config.Height;
-				
+
 				if not Menu.AutoFill then
 					Fatality:CreateAnimation(Section,0.25,{
 						Size = UDim2.new(1, 0, 0, MainScale)
@@ -4734,7 +4742,7 @@ function Fatality.new(Window: Window)
 		local ScrollingFrame = Instance.new("ScrollingFrame")
 		local UIListLayout = Instance.new("UIListLayout")
 		local searchScale = UDim2.new(0, 295, 0, 295);
-		
+
 		local SearchToggle = function(value)
 			if value then
 				SearchFrame.Position = UDim2.fromOffset(SearchButton.AbsolutePosition.X - 5,SearchButton.AbsolutePosition.Y + (SearchButton.AbsoluteSize.Y * 3))
@@ -5004,7 +5012,7 @@ function Fatality.new(Window: Window)
 				SearchInformation[v.Path.." - "..Fatality:RandomString()] = {
 					root = button,
 					callback = function()
-						
+
 					end,
 				};
 			end);
