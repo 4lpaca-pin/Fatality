@@ -2092,6 +2092,9 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 		on_toggle = function(cb)
 			func = cb;
 		end,
+        change_default = function(v)
+            Default = v;
+        end,
 		refresh = function()
 			for i,v in next , ScrollingFrame:GetChildren() do
 				if v:IsA('TextButton') then
@@ -2962,7 +2965,11 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			Config.Default = args;
 			Value_Text.Text = DataParser(Config.Default);
 
+            res:change_default(Config.Default);
+            
 			Config.Callback(args);
+
+            
 		end);
 
 		res:set_data(Config.Values);
@@ -3037,6 +3044,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			SetValue = function(def)
 				Config.Default = def;
 				Value_Text.Text = DataParser(Config.Default);
+                res:change_default(Config.Default);
 			end,
 			SetData = function(def)
 				Config.Values = def;
