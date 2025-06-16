@@ -37,6 +37,7 @@ export type Listbox = {
 	Option: boolean,
 	Multi: boolean,
 	Position: string,
+	Flag: string | nil,
 	Height: number,
 	Default: ValueBase,
 	Values: {ValueBase},
@@ -67,7 +68,8 @@ export type Toggle = {
 	Default: boolean,
 	Callback: (boolean) -> any,
 	Risky: boolean,
-	Option: boolean
+	Option: boolean,
+	Flag: string | nil,
 }
 
 export type Slider = {
@@ -79,6 +81,7 @@ export type Slider = {
 	Type: string,
 	Callback: (number) -> any,
 	Risky: boolean,
+	Flag: string | nil,
 	Option: boolean
 }
 
@@ -93,6 +96,7 @@ export type ColorPicker = {
 	Default: Color3,
 	Transparency: number,
 	Callback: (number) -> any,
+	Flag: string | nil,
 	Option: boolean
 }
 
@@ -103,6 +107,7 @@ export type Dropdown = {
 	Callback: (string | {string}) -> any,
 	Option: boolean,
 	Multi: boolean,
+	Flag: string | nil,
 	AutoUpdate: boolean
 }
 
@@ -110,6 +115,7 @@ export type Keybind = {
 	Name: string,
 	Default: string | Enum.KeyCode,
 	Callback: (string) -> any,
+	Flag: string | nil,
 	Option: boolean,
 }
 
@@ -117,6 +123,7 @@ export type Notify = {
 	Title: string,
 	Content: string,
 	Duration: number,
+	Flag: string | nil,
 	Icon: string
 }
 
@@ -131,6 +138,126 @@ hookfunction = hookfunction or function(a,b) return a; end;
 getgenv = getgenv or getfenv;
 protect_gui = protect_gui or protectgui or (syn and syn.protect_gui) or function() end;
 getgenv().LPH_NO_VIRTUALIZE = LPH_NO_VIRTUALIZE or function(f) return f end;
+
+if game:GetService('RunService'):IsStudio() then
+	local BaseWorkspace = Instance.new('Folder',game:GetService("ReplicatedFirst"));
+	
+	BaseWorkspace.Name = "WORKSPACE";
+	
+	local __get_path_c = function(path)
+		return (string.find(path,'/',1,true) and string.split(path,'/')) or (string.find(path,'\\',1,true) and string.split(path,'\\')) or {path};
+	end
+
+	local __get_path = function(path)
+		local main = __get_path_c(path);
+
+		local block = BaseWorkspace;
+
+		for i,v in next , main do
+			block = block[v];
+		end;
+
+		return block;
+	end;
+
+	getgenv().readfile = function(path)
+		local path : StringValue = __get_path(path);
+
+		return path.Value;
+	end;
+
+	getgenv().isfile = function(path)
+		local success , message = pcall(function()
+			return __get_path(path);
+		end);
+
+		if success and not message:IsA("Folder") then
+			return true;
+		end;
+
+		return false;
+	end;
+
+	getgenv().isfolder = function(path)
+		local success , message = pcall(function()
+			return __get_path(path);
+		end);
+
+		if success and message:IsA("Folder") then
+			return true;
+		end;
+
+		return false;
+	end;
+
+	getgenv().writefile = function(path,content)
+		local main = __get_path_c(path);
+
+		local block = BaseWorkspace;
+
+		for i,v in next , main do
+			local item = block:FindFirstChild(v);
+			if not item then
+				local c = Instance.new('StringValue',block);
+
+				c.Name = tostring(v);
+				c.Value = content;
+			else
+				if item:IsA('StringValue') and tostring(item) == v then
+					item.Name = tostring(v);
+					item.Value = content;
+				end;
+
+				block = item;
+			end;
+		end;
+	end;
+
+	getgenv().listfiles = function(path)
+		local fold = __get_path(path);
+		local pa = {};
+
+		for i,v in next , fold:GetChildren() do
+			if v:IsA('StringValue') then
+				table.insert(pa,path..'/'..tostring(v));
+			end;
+		end;
+
+		return pa;
+	end;
+
+	getgenv().makefolder = function(path)
+		local main = __get_path_c(path);
+
+		local block = BaseWorkspace;
+
+		for i,v in next , main do
+			local item = block:FindFirstChild(v);
+			if not item then
+				local c = Instance.new('Folder',block);
+
+				c.Name = tostring(v);
+			else
+				block = item;
+			end;
+		end;
+	end;
+
+	getgenv().delfile = function(path)
+		local main = __get_path_c(path);
+
+		local block = BaseWorkspace;
+
+		for i,v in next , main do
+			local item = block:FindFirstChild(v);
+			if item and item:IsA('StringValue') then
+				item:Destroy();
+			else
+				block = item;
+			end;
+		end;
+	end;
+end;
 
 -- Services --
 local TextService = cloneref(game:GetService('TextService'));
@@ -155,7 +282,12 @@ Fatality.GLOBAL_ENVIRONMENT = {};
 Fatality.Windows = {};
 Fatality.FontSemiBold = Font.new('rbxasset://fonts/families/GothamSSm.json',Enum.FontWeight.SemiBold,Enum.FontStyle.Normal);
 Fatality.Flags = {};
-Fatality.Version = '1.5';
+Fatality.Colors = {
+	Black = Color3.fromRGB(16, 16, 16),
+	Main = Color3.fromRGB(255, 106, 133)
+};
+Fatality.DragBlacklist = {};
+Fatality.Version = '1.6';
 Fatality.Lucide = {
 	["lucide-accessibility"] = "rbxassetid://10709751939",
 	["lucide-activity"] = "rbxassetid://10709752035",
@@ -977,6 +1109,8 @@ Fatality.Lucide = {
 	["lucide-zoom-out"] = "rbxassetid://10747384679",
 };
 
+Fatality.WindowFlags = {};
+
 function Fatality:IsMobile() : boolean
 	return UserInputService.TouchEnabled;	
 end;
@@ -1078,7 +1212,7 @@ function Fatality:Drag(InputFrame: Frame, MoveFrame: Frame, Speed : number)
 	end;
 
 	InputFrame.InputBegan:Connect(function(input)
-		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then 
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and #Fatality.DragBlacklist <= 0 then 
 			dragToggle = true
 			dragStart = input.Position
 			startPos = MoveFrame.Position
@@ -1091,9 +1225,13 @@ function Fatality:Drag(InputFrame: Frame, MoveFrame: Frame, Speed : number)
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch and #Fatality.DragBlacklist <= 0 then
 			if dragToggle then
 				updateInput(input)
+			end
+		else
+			if #Fatality.DragBlacklist > 0 then
+				dragToggle = false
 			end
 		end
 	end);
@@ -1164,7 +1302,7 @@ function Fatality:CreateOption(OptionButton: ImageButton): Elements
 	ExtElementFrame.Name = Fatality:RandomString()
 	ExtElementFrame.Parent = OwnWindow
 	ExtElementFrame.AnchorPoint = Vector2.new(0.5, 0)
-	ExtElementFrame.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
+	ExtElementFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
 	ExtElementFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	ExtElementFrame.BorderSizePixel = 0
 	ExtElementFrame.ClipsDescendants = true
@@ -1537,7 +1675,8 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 	ColorPickerFrame.Position = UDim2.new(4,0,4,0)
 	ColorPickerFrame.Size = UDim2.new(0, 175, 0, 195)
 	ColorPickerFrame.ZIndex = 200
-
+	Fatality:AddDragBlacklist(ColorPickerFrame);
+	
 	UICorner.CornerRadius = UDim.new(0, 2)
 	UICorner.Parent = ColorPickerFrame
 
@@ -1692,7 +1831,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 
 	hexCode.Name = Fatality:RandomString()
 	hexCode.Parent = ColorOpt
-	hexCode.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+	hexCode.BackgroundColor3 = Fatality.Colors.Black
 	hexCode.BackgroundTransparency = 0.400
 	hexCode.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	hexCode.BorderSizePixel = 0
@@ -1939,6 +2078,16 @@ function Fatality:RandomStr(len: number): string
 	return main;
 end;
 
+function Fatality:AddDragBlacklist(Frame: Frame)
+	Frame.MouseEnter:Connect(function()
+		table.insert(Fatality.DragBlacklist,Frame);
+	end);
+	
+	Frame.MouseLeave:Connect(function()
+		table.remove(Fatality.DragBlacklist,table.find(Fatality.DragBlacklist,Frame));
+	end)
+end;
+
 function Fatality:ProtectText(Label: TextLabel,Text: string)
 	Label.RichText = true;
 
@@ -1964,7 +2113,9 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 	local ScrollingFrame = Instance.new("ScrollingFrame")
 	local UIListLayout = Instance.new("UIListLayout")
 	local SPAWN_THREAD;
-
+	
+	Fatality:AddDragBlacklist(DropdownItemFrame);
+	
 	local Toggle = function(value)
 		if value then
 			if SPAWN_THREAD then
@@ -2077,7 +2228,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 		db_selected.Size = UDim2.new(1, 0, 0, 10)
 		db_selected.ZIndex = 110
 		db_selected.FontFace = Fatality.FontSemiBold
-		db_selected.TextColor3 = Color3.fromRGB(255, 106, 133)
+		db_selected.TextColor3 = Fatality.Colors.Main
 		db_selected.TextSize = 12.000
 		db_selected.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -2092,9 +2243,9 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 		on_toggle = function(cb)
 			func = cb;
 		end,
-        change_default = function(v)
-            Default = v;
-        end,
+		change_default = function(v)
+			Default = v;
+		end,
 		refresh = function()
 			for i,v in next , ScrollingFrame:GetChildren() do
 				if v:IsA('TextButton') then
@@ -2114,7 +2265,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 				if Multiplier then
 					if (typeof(Default) == 'table' and (Default[v] or table.find(Default,v))) or Default == v then
 						Selected[v] = true
-						bth.TextColor3 = Color3.fromRGB(255, 106, 133);
+						bth.TextColor3 = Fatality.Colors.Main;
 					else
 						bth.TextColor3 = Color3.fromRGB(255, 255, 255);
 						Selected[v] = false
@@ -2124,7 +2275,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 						Selected[v] = not Selected[v];
 
 						if Selected[v] then
-							bth.TextColor3 = Color3.fromRGB(255, 106, 133);
+							bth.TextColor3 = Fatality.Colors.Main;
 						else
 							bth.TextColor3 = Color3.fromRGB(255, 255, 255);
 						end;
@@ -2136,7 +2287,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 						selectedmem = bth;
 						Selected = v;
 
-						bth.TextColor3 = Color3.fromRGB(255, 106, 133);
+						bth.TextColor3 = Fatality.Colors.Main;
 					else
 						bth.TextColor3 = Color3.fromRGB(255, 255, 255);
 					end;
@@ -2146,7 +2297,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 							selectedmem.TextColor3 = Color3.fromRGB(255, 255, 255);
 						end;
 
-						bth.TextColor3 = Color3.fromRGB(255, 106, 133);
+						bth.TextColor3 = Fatality.Colors.Main;
 						selectedmem = bth;
 						Selected = v;
 
@@ -2182,7 +2333,8 @@ end;
 
 function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : BindableEvent,SearchAPI: {Path: string,Memory : (name:string) -> any}) : Elements
 	local elements = {};
-
+	local FatalWindow = Fatality:GetWindowFromElement(Parent);
+	
 	function elements:AddToggle(Config: Toggle)
 		Config = Config or {};
 		Config.Name = Config.Name or "Toggle";
@@ -2190,7 +2342,8 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Config.Risky = Config.Risky or false;
 		Config.Option = Config.Option or false;
 		Config.Callback = Config.Callback or function(bool) end;
-
+		Config.Flag = Config.Flag or nil;
+		
 		local Toggle = Instance.new("Frame")
 		local Toggle_Name = Instance.new("TextLabel")
 		local ValueFrame = Instance.new("Frame")
@@ -2210,7 +2363,8 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Toggle.BorderSizePixel = 0
 		Toggle.Size = UDim2.new(1, -25, 0, 17)
 		Toggle.ZIndex = ZIndex + 1
-
+		Fatality:AddDragBlacklist(Toggle);
+		
 		Toggle_Name.Name = Fatality:RandomString()
 		Toggle_Name.Parent = Toggle
 		Toggle_Name.AnchorPoint = Vector2.new(0, 0.5)
@@ -2232,7 +2386,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = Toggle
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
-		ValueFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+		ValueFrame.BackgroundColor3 = Fatality.Colors.Black
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.Position = UDim2.new(1, -3, 0.5, 0)
@@ -2276,7 +2430,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			if value then
 				Fatality:CreateAnimation(ValueIcon,0.45,{
 					ImageTransparency = 0,
-					ImageColor3 = Color3.fromRGB(255, 106, 133),
+					ImageColor3 = Fatality.Colors.Main,
 					Size = UDim2.new(0.8, 0, 0.8, 0),
 					Rotation = 0,
 				})
@@ -2361,20 +2515,36 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			toggleImg(Config.Default);
 			Config.Callback(Config.Default)
 		end);
-
-		return Fatality:CreateResponse({
+		
+		local Respons = Fatality:CreateResponse({
 			Rename = function(new_name)
 				Toggle_Name.Text = new_name;
 				Fatality:ProtectText(Toggle_Name,new_name);
 			end,
+			GetValue = function()
+				return Config.Default;
+			end,
 			Signal = Event.Event:Connect(OpcToggle),
 			SetValue = function(v)
+				local IsSame = v == Config.Default;
+				
 				Config.Default = v;
 
 				toggleImg(Config.Default);
+				
+				if not IsSame then
+					Config.Callback(Config.Default);
+				end;
 			end,
+			Flag = Config.Flag and (Config.Flag.."Toggle"),
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
-		})
+		});
+		
+		if Config.Flag then
+			Fatality.WindowFlags[FatalWindow][Config.Flag.."Toggle"] = Respons;
+		end;
+		
+		return Respons;
 	end;
 
 	function elements:AddSlider(Config: Slider)
@@ -2388,6 +2558,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Config.Risky = Config.Risky or false;
 		Config.Option = Config.Option or false;
 		Config.Callback = Config.Callback or function(number) end;
+		Config.Flag = Config.Flag or nil;
 
 		local Slider = Instance.new("Frame")
 		local Slider_Name = Instance.new("TextLabel")
@@ -2401,7 +2572,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		if SearchAPI then
 			SearchAPI.Memory(Config.Name);
 		end;
-
+		
 		Slider.Name = Fatality:RandomString()
 		Slider.Parent = Parent
 		Slider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2410,7 +2581,9 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Slider.BorderSizePixel = 0
 		Slider.Size = UDim2.new(1, -25, 0, 17)
 		Slider.ZIndex = ZIndex + 1
-
+		
+		Fatality:AddDragBlacklist(Slider);
+		
 		Slider_Name.Name = Fatality:RandomString()
 		Slider_Name.Parent = Slider
 		Slider_Name.AnchorPoint = Vector2.new(0, 0.5)
@@ -2431,7 +2604,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = Slider
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
-		ValueFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+		ValueFrame.BackgroundColor3 = Fatality.Colors.Black
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.Position = UDim2.new(1, -3, 0.5, 0)
@@ -2458,7 +2631,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 		boxli.Name = Fatality:RandomString()
 		boxli.Parent = ValueFrame
-		boxli.BackgroundColor3 = Color3.fromRGB(255, 106, 133)
+		boxli.BackgroundColor3 = Fatality.Colors.Main
 		boxli.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		boxli.BorderSizePixel = 0
 		boxli.Size = UDim2.new((Config.Default - Config.Min) / (Config.Max - Config.Min), 0, 1, 0)
@@ -2585,13 +2758,18 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				end;
 			end);
 		end;
-
-		return Fatality:CreateResponse({
+		
+		local Respons = Fatality:CreateResponse({
 			Rename = function(new_name)
 				Slider_Name.Text = new_name
 			end,
+			GetValue = function()
+				return Config.Default;
+			end,
 			Signal = Event.Event:Connect(OpcToggle),
 			SetValue = function(v)
+				local IsSame = v == Config.Default;
+				
 				Config.Default = v;
 
 				TweenService:Create(boxli , TweenInfo.new(0.2),{
@@ -2600,9 +2778,20 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 				Config.Default = v;
 				ValueText.Text = string.format('%s%s',tostring(Config.Default),tostring(Config.Type));
+				
+				if not IsSame then
+					Config.Callback(v);
+				end;
 			end,
+			Flag = Config.Flag and Config.Flag.."Slider",
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
-		})
+		});
+
+		if Config.Flag then
+			Fatality.WindowFlags[FatalWindow][Config.Flag.."Slider"] = Respons;
+		end;
+
+		return Respons;
 	end;
 
 	function elements:AddButton(Config: Button)
@@ -2621,12 +2810,13 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 		Button.Name = Fatality:RandomString()
 		Button.Parent = Parent
-		Button.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+		Button.BackgroundColor3 = Fatality.Colors.Black
 		Button.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		Button.BorderSizePixel = 0
 		Button.Size = UDim2.new(1, -25, 0, 25)
 		Button.ZIndex = ZIndex + 1
-
+		Fatality:AddDragBlacklist(Button);
+		
 		Button_Name.Name = Fatality:RandomString()
 		Button_Name.Parent = Button
 		Button_Name.AnchorPoint = Vector2.new(0, 0.5)
@@ -2676,7 +2866,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				})
 			else
 				Fatality:CreateAnimation(Button,0.45,{
-					BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+					BackgroundColor3 = Fatality.Colors.Black
 				})
 			end;
 		end)
@@ -2690,6 +2880,9 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 				Button_Name.Text = new_name
 				Fatality:ProtectText(Button_Name,new_name);
 			end,
+			GetValue = function()
+				return Config.Default;
+			end,
 			Signal = Event.Event:Connect(OpcToggle),
 			Fire = Config.Callback,
 		})
@@ -2702,7 +2895,8 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Config.Default = Config.Default or Color3.fromRGB(255, 255, 255);
 		Config.Callback = Config.Callback or function(number) end;
 		Config.Transparency = Config.Transparency or 0;
-
+		Config.Flag = Config.Flag or nil;
+		
 		local ColorPicker = Instance.new("Frame")
 		local ColorPicker_Name = Instance.new("TextLabel")
 		local ValueFrame = Instance.new("Frame")
@@ -2721,7 +2915,8 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ColorPicker.BorderSizePixel = 0
 		ColorPicker.Size = UDim2.new(1, -25, 0, 17)
 		ColorPicker.ZIndex = ZIndex + 1
-
+		Fatality:AddDragBlacklist(ColorPicker);
+		
 		ColorPicker_Name.Name = Fatality:RandomString()
 		ColorPicker_Name.Parent = ColorPicker
 		ColorPicker_Name.AnchorPoint = Vector2.new(0, 0.5)
@@ -2803,19 +2998,38 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		end;
 
 		OpcToggle(Event:GetAttribute('V'));
-
-		return Fatality:CreateResponse({
+		
+		local Respons = Fatality:CreateResponse({
 			Rename = function(new_name)
 				ColorPicker.Text = new_name
 			end,
 			Signal = Event.Event:Connect(OpcToggle),
 			SetValue = function(rgb,opc)
-				ValueFrame.BackgroundColor3 = rgb;
+				local IsSame = ValueFrame.BackgroundColor3 == rgb or ValueFrame.BackgroundTransparency == opc;
+				
+				ValueFrame.BackgroundColor3 = rgb; 
 				ValueFrame.BackgroundTransparency = opc;
-				res.set_opc(opc)
+				res.set_opc(opc);
+				
+				if not IsSame then
+					task.spawn(Config.Callback,rgb,opc)
+				end;
 			end,
+			GetValue = function()
+				return {
+					Color = ValueFrame.BackgroundColor3,
+					Transparency = ValueFrame.BackgroundTransparency
+				};
+			end,
+			Flag = Config.Flag and Config.Flag.."ColorPicker",
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
-		})
+		});
+
+		if Config.Flag then
+			Fatality.WindowFlags[FatalWindow][Config.Flag.."ColorPicker"] = Respons;
+		end;
+		
+		return Respons;
 	end;
 
 	function elements:AddDropdown(Config: Dropdown)
@@ -2879,7 +3093,8 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Dropdown.BorderSizePixel = 0
 		Dropdown.Size = UDim2.new(1, -25, 0, 17)
 		Dropdown.ZIndex = ZIndex + 3
-
+		Fatality:AddDragBlacklist(Dropdown);
+		
 		Dropdown_Name.Name = Fatality:RandomString()
 		Dropdown_Name.Parent = Dropdown
 		Dropdown_Name.AnchorPoint = Vector2.new(0, 0.5)
@@ -2902,7 +3117,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = Dropdown
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
-		ValueFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+		ValueFrame.BackgroundColor3 = Fatality.Colors.Black
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.Position = UDim2.new(1, -3, 0.5, 0)
@@ -2965,11 +3180,9 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			Config.Default = args;
 			Value_Text.Text = DataParser(Config.Default);
 
-            res:change_default(Config.Default);
-            
-			Config.Callback(args);
+			res:change_default(Config.Default);
 
-            
+			Config.Callback(args);
 		end);
 
 		res:set_data(Config.Values);
@@ -2979,7 +3192,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 			if b then
 				Fatality:CreateAnimation(icon,0.35,{
 					Rotation = -180,
-					ImageColor3 = Color3.fromRGB(255, 106, 133)
+					ImageColor3 = Fatality.Colors.Main
 				})
 			else
 				Fatality:CreateAnimation(icon,0.35,{
@@ -3034,27 +3247,42 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		end;
 
 		OpcToggle(Event:GetAttribute('V'));
-
-		return Fatality:CreateResponse({
+		
+		local Respons = Fatality:CreateResponse({
 			Rename = function(new_name)
 				Dropdown_Name.Text = new_name
 				Fatality:ProtectText(Dropdown_Name,new_name);
 			end,
+			GetValue = function()
+				return Config.Default;
+			end,
 			Signal = Event.Event:Connect(OpcToggle),
 			SetValue = function(def)
+				
 				Config.Default = def;
 				Value_Text.Text = DataParser(Config.Default);
-                res:change_default(Config.Default);
+				res:change_default(Config.Default);
+				
+				Config.Callback(def);
 			end,
 			SetData = function(def)
 				Config.Values = def;
+				
 				res:set_data(Config.Values);
+				
 				if not Config.AutoUpdate then
 					res:refresh();
 				end
 			end,
+			Flag = Config.Flag and Config.Flag.."Dropdown",
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
-		})
+		});
+
+		if Config.Flag then
+			Fatality.WindowFlags[FatalWindow][Config.Flag.."Dropdown"] = Respons;
+		end;
+
+		return Respons;
 	end;
 
 	function elements:AddKeybind(Config: Keybind)
@@ -3127,7 +3355,8 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		Keybind.BorderSizePixel = 0
 		Keybind.Size = UDim2.new(1, -25, 0, 17)
 		Keybind.ZIndex = ZIndex + 1
-
+		Fatality:AddDragBlacklist(Keybind);
+		
 		Keybind_Name.Name = Fatality:RandomString()
 		Keybind_Name.Parent = Keybind
 		Keybind_Name.AnchorPoint = Vector2.new(0, 0.5)
@@ -3149,7 +3378,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		ValueFrame.Name = Fatality:RandomString()
 		ValueFrame.Parent = Keybind
 		ValueFrame.AnchorPoint = Vector2.new(1, 0.5)
-		ValueFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+		ValueFrame.BackgroundColor3 = Fatality.Colors.Black
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.Position = UDim2.new(1, -3, 0.5, 0)
@@ -3259,22 +3488,634 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		end;
 
 		OpcToggle(Event:GetAttribute('V'));
-
-		return Fatality:CreateResponse({
+		
+		local Respons = Fatality:CreateResponse({
 			Rename = function(new_name)
 				Keybind_Name.Text = new_name
 				Fatality:ProtectText(Keybind_Name,new_name);
 			end,
+			GetValue = function()
+				return Config.Default;
+			end,
 			Signal = Event.Event:Connect(OpcToggle),
 			SetValue = function(def)
+				local IsSame = Config.Default == def;
+				
 				Config.Default = def;
 				ValueText.Text = GetItem(Config.Default);
+				
+				if not IsSame then
+					Config.Callback(Config.Default);
+				end;
 			end,
+			Flag = Config.Flag and Config.Flag.."Keybind",
 			Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
-		})
+		});
+
+		if Config.Flag then
+			
+			Fatality.WindowFlags[FatalWindow][Config.Flag.."Keybind"] = Respons;
+		end;
+		
+		return Respons;
 	end;
 
 	return elements;
+end;
+
+function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
+	
+	local ConfigWindowFrame = Instance.new("Frame")
+	local UICorner = Instance.new("UICorner")
+	local UIStroke = Instance.new("UIStroke")
+	local DropShadow = Instance.new("ImageLabel")
+	local ScrollingFrame = Instance.new("ScrollingFrame")
+	local UICorner_2 = Instance.new("UICorner")
+	local UIStroke_2 = Instance.new("UIStroke")
+	local UIListLayout = Instance.new("UIListLayout")
+	local SpaceBox = Instance.new("Frame")
+	local InputFrame = Instance.new("Frame")
+	local UIStroke_3 = Instance.new("UIStroke")
+	local UICorner_3 = Instance.new("UICorner")
+	local TextBox = Instance.new("TextBox")
+	local AddConfigButton = Instance.new("ImageButton")
+	local UICorner_4 = Instance.new("UICorner")
+	local GetConfigButton = Instance.new("ImageButton")
+	local UICorner_5 = Instance.new("UICorner")
+	local SaveConfigButton = Instance.new("ImageButton")
+	local UICorner_6 = Instance.new("UICorner")
+	local DeleteButton = Instance.new("ImageButton")
+	local UICorner_7 = Instance.new("UICorner")
+	
+	Fatality:ScrollSignal(ScrollingFrame,UIListLayout,"Y");
+	
+	Fatality:AddDragBlacklist(ConfigWindowFrame);
+	
+	local UIToggle = false;
+	local ElementToggle = function(value)
+		UIToggle = value;
+		
+		if value then
+			ConfigWindowFrame.Position = UDim2.fromOffset(Button.AbsolutePosition.X,Button.AbsolutePosition.Y + (Button.AbsoluteSize.Y * 3));
+			
+			Fatality:CreateAnimation(ConfigWindowFrame,0.3,{
+				Size = UDim2.new(0, 185, 0, 195),
+			})
+			
+			Fatality:CreateAnimation(UIStroke,0.3,{
+				Transparency = 0
+			})
+			
+			Fatality:CreateAnimation(DropShadow,0.3,{
+				ImageTransparency = 0.750
+			})
+			
+			Fatality:CreateAnimation(ScrollingFrame,0.3,{
+				BackgroundTransparency = 0
+			})
+			
+			Fatality:CreateAnimation(UIStroke_2,0.3,{
+				Transparency = 0.750
+			})
+			
+			Fatality:CreateAnimation(UIStroke_3,0.3,{
+				Transparency = 0.750
+			})
+			
+			Fatality:CreateAnimation(SpaceBox,0.3,{
+				BackgroundTransparency = 0
+			})
+			
+			Fatality:CreateAnimation(InputFrame,0.3,{
+				BackgroundTransparency = 0
+			})
+			
+			Fatality:CreateAnimation(TextBox,0.3,{
+				TextTransparency = 0.5
+			})
+			
+			Fatality:CreateAnimation(AddConfigButton,0.3,{
+				ImageTransparency = 0.500
+			})
+			
+			Fatality:CreateAnimation(GetConfigButton,0.3,{
+				ImageTransparency = 0.500
+			})
+			
+			Fatality:CreateAnimation(SaveConfigButton,0.3,{
+				ImageTransparency = 0.500
+			})
+			
+			Fatality:CreateAnimation(DeleteButton,0.3,{
+				ImageTransparency = 0.2500
+			})
+			
+			Fatality:CreateAnimation(DropShadow,0.3,{
+				ImageTransparency = 0.75
+			})
+		else
+			Fatality:CreateAnimation(DropShadow,0.3,{
+				ImageTransparency = 1
+			})
+			
+			Fatality:CreateAnimation(ConfigWindowFrame,0.275,{
+				Size = UDim2.new(0, 185, 0, 0),
+			})
+
+			Fatality:CreateAnimation(UIStroke,0.3,{
+				Transparency = 1
+			})
+
+			Fatality:CreateAnimation(DropShadow,0.3,{
+				ImageTransparency = 1
+			})
+
+			Fatality:CreateAnimation(ScrollingFrame,0.3,{
+				BackgroundTransparency = 1
+			})
+
+			Fatality:CreateAnimation(UIStroke_2,0.3,{
+				Transparency = 1
+			})
+
+			Fatality:CreateAnimation(UIStroke_3,0.3,{
+				Transparency = 1
+			})
+
+			Fatality:CreateAnimation(SpaceBox,0.3,{
+				BackgroundTransparency = 1
+			})
+
+			Fatality:CreateAnimation(InputFrame,0.3,{
+				BackgroundTransparency = 1
+			})
+
+			Fatality:CreateAnimation(TextBox,0.3,{
+				TextTransparency = 1
+			})
+
+			Fatality:CreateAnimation(AddConfigButton,0.3,{
+				ImageTransparency = 1
+			})
+
+			Fatality:CreateAnimation(GetConfigButton,0.3,{
+				ImageTransparency = 1
+			})
+
+			Fatality:CreateAnimation(SaveConfigButton,0.3,{
+				ImageTransparency = 1
+			})
+
+			Fatality:CreateAnimation(DeleteButton,0.3,{
+				ImageTransparency = 1
+			})
+		end;
+	end;
+	
+	ElementToggle(false);
+	
+	ConfigWindowFrame.Name = "ConfigWindowFrame"
+	ConfigWindowFrame.Parent = Root
+	ConfigWindowFrame.AnchorPoint = Vector2.new(0,1)
+	ConfigWindowFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+	ConfigWindowFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	ConfigWindowFrame.BorderSizePixel = 0
+	ConfigWindowFrame.ClipsDescendants = true
+	ConfigWindowFrame.Position = UDim2.new(2,0,2,0)
+	ConfigWindowFrame.Size = UDim2.new(0, 185, 0, 0)
+	ConfigWindowFrame.ZIndex = 205
+
+	UICorner.CornerRadius = UDim.new(0, 2)
+	UICorner.Parent = ConfigWindowFrame
+
+	UIStroke.Color = Color3.fromRGB(29, 29, 29)
+	UIStroke.Parent = ConfigWindowFrame
+
+	DropShadow.Name = "DropShadow"
+	DropShadow.Parent = ConfigWindowFrame
+	DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+	DropShadow.BackgroundTransparency = 1.000
+	DropShadow.BorderSizePixel = 0
+	DropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+	DropShadow.Rotation = 0.001
+	DropShadow.Size = UDim2.new(1, 47, 1, 47)
+	DropShadow.ZIndex = 205
+	DropShadow.Image = "rbxassetid://6014261993"
+	DropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	DropShadow.ImageTransparency = 0.750
+	DropShadow.ScaleType = Enum.ScaleType.Slice
+	DropShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+
+	ScrollingFrame.Parent = ConfigWindowFrame
+	ScrollingFrame.Active = true
+	ScrollingFrame.BackgroundColor3 = Fatality.Colors.Black
+	ScrollingFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	ScrollingFrame.BorderSizePixel = 0
+	ScrollingFrame.Position = UDim2.new(0, 8, 0, 8)
+	ScrollingFrame.Size = UDim2.new(1, -40, 1, -45)
+	ScrollingFrame.ZIndex = 207
+	ScrollingFrame.ScrollBarThickness = 0
+
+	UICorner_2.CornerRadius = UDim.new(0, 3)
+	UICorner_2.Parent = ScrollingFrame
+
+	UIStroke_2.Transparency = 0.750
+	UIStroke_2.Color = Color3.fromRGB(29, 29, 29)
+	UIStroke_2.Parent = ScrollingFrame
+
+	UIListLayout.Parent = ScrollingFrame
+	UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	UIListLayout.Padding = UDim.new(0, 5)
+
+	SpaceBox.Name = "SpaceBox"
+	SpaceBox.Parent = ScrollingFrame
+	SpaceBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	SpaceBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	SpaceBox.BorderSizePixel = 0
+	SpaceBox.Size = UDim2.new(0, 0, 0, 1)
+
+	InputFrame.Name = "InputFrame"
+	InputFrame.Parent = ConfigWindowFrame
+	InputFrame.AnchorPoint = Vector2.new(0, 1)
+	InputFrame.BackgroundColor3 = Fatality.Colors.Black
+	InputFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	InputFrame.BorderSizePixel = 0
+	InputFrame.Position = UDim2.new(0, 8, 1, -9)
+	InputFrame.Size = UDim2.new(1, -40, 0, 22)
+	InputFrame.ZIndex = 208
+
+	UIStroke_3.Transparency = 0.750
+	UIStroke_3.Color = Color3.fromRGB(29, 29, 29)
+	UIStroke_3.Parent = InputFrame
+
+	UICorner_3.CornerRadius = UDim.new(0, 3)
+	UICorner_3.Parent = InputFrame
+
+	TextBox.Parent = InputFrame
+	TextBox.AnchorPoint = Vector2.new(0.5, 0.5)
+	TextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	TextBox.BackgroundTransparency = 1.000
+	TextBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	TextBox.BorderSizePixel = 0
+	TextBox.Position = UDim2.new(0.5, 0, 0.5, 0)
+	TextBox.Size = UDim2.new(1, -10, 1, -1)
+	TextBox.ZIndex = 209
+	TextBox.FontFace = Fatality.FontSemiBold
+	TextBox.Text = ""
+	TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TextBox.TextSize = 10.000
+	TextBox.TextTransparency = 0.500
+	TextBox.TextXAlignment = Enum.TextXAlignment.Left
+
+	AddConfigButton.Name = "AddConfigButton"
+	AddConfigButton.Parent = InputFrame
+	AddConfigButton.AnchorPoint = Vector2.new(0, 0.5)
+	AddConfigButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	AddConfigButton.BackgroundTransparency = 1.000
+	AddConfigButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	AddConfigButton.BorderSizePixel = 0
+	AddConfigButton.Position = UDim2.new(1, 8, 0.5, 0)
+	AddConfigButton.Size = UDim2.new(0, 15, 0, 15)
+	AddConfigButton.ZIndex = 209
+	AddConfigButton.Image = "rbxassetid://10734923868"
+	AddConfigButton.ImageTransparency = 0.500
+
+	UICorner_4.CornerRadius = UDim.new(1, 0)
+	UICorner_4.Parent = AddConfigButton
+
+	GetConfigButton.Name = "GetConfigButton"
+	GetConfigButton.Parent = ConfigWindowFrame
+	GetConfigButton.AnchorPoint = Vector2.new(1, 0)
+	GetConfigButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	GetConfigButton.BackgroundTransparency = 1.000
+	GetConfigButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	GetConfigButton.BorderSizePixel = 0
+	GetConfigButton.Position = UDim2.new(1, -8, 0, 10)
+	GetConfigButton.Size = UDim2.new(0, 15, 0, 15)
+	GetConfigButton.ZIndex = 209
+	GetConfigButton.Image = "rbxassetid://10723387265"
+	GetConfigButton.ImageTransparency = 0.500
+
+	UICorner_5.CornerRadius = UDim.new(1, 0)
+	UICorner_5.Parent = GetConfigButton
+
+	SaveConfigButton.Name = "SaveConfigButton"
+	SaveConfigButton.Parent = ConfigWindowFrame
+	SaveConfigButton.AnchorPoint = Vector2.new(1, 0)
+	SaveConfigButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	SaveConfigButton.BackgroundTransparency = 1.000
+	SaveConfigButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	SaveConfigButton.BorderSizePixel = 0
+	SaveConfigButton.Position = UDim2.new(1, -8, 0, 28)
+	SaveConfigButton.Size = UDim2.new(0, 15, 0, 15)
+	SaveConfigButton.ZIndex = 209
+	SaveConfigButton.Image = "rbxassetid://10734941499"
+	SaveConfigButton.ImageTransparency = 0.500
+
+	UICorner_6.CornerRadius = UDim.new(1, 0)
+	UICorner_6.Parent = SaveConfigButton
+
+	DeleteButton.Name = "DeleteButton"
+	DeleteButton.Parent = ConfigWindowFrame
+	DeleteButton.AnchorPoint = Vector2.new(1, 0)
+	DeleteButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	DeleteButton.BackgroundTransparency = 1.000
+	DeleteButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	DeleteButton.BorderSizePixel = 0
+	DeleteButton.Position = UDim2.new(1, -8, 0, 55)
+	DeleteButton.Size = UDim2.new(0, 15, 0, 15)
+	DeleteButton.ZIndex = 209
+	DeleteButton.Image = "rbxassetid://10747362393"
+	DeleteButton.ImageColor3 = Fatality.Colors.Main
+	DeleteButton.ImageTransparency = 0.250
+
+	UICorner_7.CornerRadius = UDim.new(1, 0)
+	UICorner_7.Parent = DeleteButton
+	
+	Button.MouseButton1Click:Connect(function()
+		ElementToggle(true);
+	end);
+	
+	Fatality:CreateHover(DeleteButton,function(bool)
+		if bool then
+			Fatality:CreateAnimation(DeleteButton,0.3,{
+				ImageTransparency = 0;
+			})
+		else
+			Fatality:CreateAnimation(DeleteButton,0.3,{
+				ImageTransparency = 0.35;
+			})
+		end;
+	end);
+	
+	Fatality:CreateHover(SaveConfigButton,function(bool)
+		if bool then
+			Fatality:CreateAnimation(SaveConfigButton,0.3,{
+				ImageTransparency = 0.15;
+			})
+		else
+			Fatality:CreateAnimation(SaveConfigButton,0.3,{
+				ImageTransparency = 0.500;
+			})
+		end;
+	end);
+	
+	Fatality:CreateHover(GetConfigButton,function(bool)
+		if bool then
+			Fatality:CreateAnimation(GetConfigButton,0.3,{
+				ImageTransparency = 0.15;
+			})
+		else
+			Fatality:CreateAnimation(GetConfigButton,0.3,{
+				ImageTransparency = 0.500;
+			})
+		end;
+	end);
+	
+	Fatality:CreateHover(AddConfigButton,function(bool)
+		if bool then
+			Fatality:CreateAnimation(AddConfigButton,0.3,{
+				ImageTransparency = 0.15;
+			})
+		else
+			Fatality:CreateAnimation(AddConfigButton,0.3,{
+				ImageTransparency = 0.500;
+			})
+		end;
+	end);
+	
+	game:GetService('UserInputService').InputBegan:Connect(function(Input,Typing)
+		if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+			if UIToggle and not Fatality:IsMouseOverFrame(ConfigWindowFrame) then
+				ElementToggle(false);
+			end;
+		end;
+	end);
+	
+	local new_button = function()
+		local db_selected = Instance.new("TextButton")
+
+		db_selected.Name = Fatality:RandomString()
+		db_selected.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		db_selected.BackgroundTransparency = 1.000
+		db_selected.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		db_selected.BorderSizePixel = 0
+		db_selected.Size = UDim2.new(1, 0, 0, 10)
+		db_selected.ZIndex = 220
+		db_selected.FontFace = Fatality.FontSemiBold
+		db_selected.TextColor3 = Color3.fromRGB(150, 150, 150)
+		db_selected.TextSize = 12.000
+		db_selected.TextXAlignment = Enum.TextXAlignment.Left
+
+		return db_selected;
+	end;
+	
+	local Configs = {};
+	local import = {
+		Name = nil,
+		Element = nil;
+	};
+	
+	local res;
+	res = Fatality:CreateResponse({
+		SetFiles = function(configs,bypass)
+			local OldLen = #Configs;
+			
+			Configs = configs;
+			
+			if OldLen ~= #configs and not bypass then
+				res:ReloadConfig();
+			end;
+		end,
+		
+		Refresh = function()
+			for i,v in next , ScrollingFrame:GetChildren() do
+				if v:IsA('TextButton') then
+					v:Destroy();
+				end;
+			end;
+			
+			for i,v in next, Configs do
+				local button = new_button();
+
+				button.Parent = ScrollingFrame;
+				button.Text = " "..tostring(v);
+
+				if tostring(import.Name) == tostring(v) or import.Name == v then
+					import.Element = button;
+					import.Name = v;
+					import.Element.TextColor3 = Fatality.Colors.Main;
+					button.Text = "  "..tostring(v);
+				end;
+				
+				button.MouseButton1Click:Connect(function()
+					if import.Element then
+						import.Element.TextColor3 = Color3.fromRGB(150, 150, 150);
+						import.Element.Text = " "..import.Name;
+					end;
+					
+					import.Element = button;
+					import.Name = v;
+					button.TextColor3 = Fatality.Colors.Main;
+					button.Text = "  "..tostring(v);
+				end);
+			end;
+		end,
+		
+		ReloadConfig = function()
+			assert(res.ConfigDirectory , "Config directory not found");
+			
+			local files = {};
+			
+			for i,v in next , listfiles(res.ConfigDirectory) do
+				local spl = (string.find(v,'/',1,true) and string.split(v,'/')) or (string.find(v,'\\',1,true) and string.split(v,'\\'));
+				local name = spl[#spl];
+				
+				table.insert(files,name);
+			end;
+
+			res:SetFiles(files,true);
+			res:Refresh();
+		end,
+		
+		DeleteConfig = function(name)
+			assert(res.ConfigDirectory , "Config directory not found");
+			
+			local path = res.ConfigDirectory..'/'..tostring(name);
+			
+			if isfile(path) then
+				delfile(path)
+			end;
+		end,
+		
+		SaveConfig = function(name,content)
+			if string.find(name,'/',1,true) or string.find(name,'\\',1,true) or string.find(name,':',1,true) then
+				return;	
+			end;
+			
+			assert(res.ConfigDirectory , "Config directory not found");
+
+			local path = res.ConfigDirectory..'/'..tostring(name);
+
+			writefile(path , content);
+		end,
+		
+		LoadConfig = function(name)
+
+			assert(res.ConfigDirectory , "Config directory not found");
+
+			local path = res.ConfigDirectory..'/'..tostring(name);
+
+			if isfile(path) then
+				local decoded = game:GetService('HttpService'):JSONDecode(readfile(path));
+				
+				Fatal.Notifier:Notify({
+					Title = "Config",
+					Content = "Loaded config '"..tostring(name).."'",
+					Icon = "settings",
+					Duration = 4,
+				});
+				
+				Fatal:LoadConfig(decoded);
+			end;
+		end,
+		
+		Init = function(Name: string,Folder: string)
+			if not isfolder(Folder or "Fatality") then
+				makefolder(Folder or "Fatality");	
+			end;
+			
+			if not isfolder((Folder or "Fatality").."/Config") then
+				makefolder((Folder or "Fatality").."/Config");	
+			end;
+			
+			local cfgPath = (Folder or "Fatality").."/Config/"..tostring(Name);
+			
+			if not isfolder(cfgPath) then
+				makefolder(cfgPath)
+			end;
+			
+			res.ConfigDirectory = cfgPath;
+			
+			AddConfigButton.MouseButton1Click:Connect(function()
+				local configName = TextBox.Text;
+				
+				if not configName:byte() then return end;
+				
+				local flags = Fatal:GetFlagConfig();
+				
+				flags.Info = {
+					Name = Name,
+					Folder = Folder,
+					ConfigName = configName,
+				};
+				
+				local code = game:GetService('HttpService'):JSONEncode(flags);
+				
+				res:SaveConfig(configName , code);
+				res:ReloadConfig();
+				
+				Fatal.Notifier:Notify({
+					Title = "Config",
+					Content = "Saved config '"..tostring(configName).."'",
+					Icon = "settings",
+					Duration = 4,
+				});
+				
+				TextBox.Text = "";
+			end);
+			
+			GetConfigButton.MouseButton1Click:Connect(function()
+				if import and import.Name then
+					res:LoadConfig(import.Name);
+				end;
+			end);
+			
+			SaveConfigButton.MouseButton1Click:Connect(function()
+				if import and import.Name then
+					local flags = Fatal:GetFlagConfig();
+					local configName = import.Name;
+					
+					flags.Info = {
+						Name = Name,
+						Folder = Folder,
+						ConfigName = configName,
+						Type = "Overwrite"
+					};
+					
+					Fatal.Notifier:Notify({
+						Title = "Config",
+						Content = "Saved config '"..tostring(configName).."'",
+						Icon = "settings",
+						Duration = 4,
+					});
+					
+					local code = game:GetService('HttpService'):JSONEncode(flags);
+					
+					res:SaveConfig(configName , code);
+					res:ReloadConfig();
+				end;
+			end);
+			
+			DeleteButton.MouseButton1Click:Connect(function()
+				if import and import.Name then
+					
+					Fatal.Notifier:Notify({
+						Title = "Config",
+						Content = "Deleted config '"..tostring(import.Name).."'",
+						Icon = "settings",
+						Duration = 4,
+					});
+					
+					res:DeleteConfig(import.Name);
+					res:ReloadConfig();
+				end;
+			end)
+		end,
+	});
+	
+	return res;
 end;
 
 function Fatality.new(Window: Window)
@@ -3291,6 +4132,8 @@ function Fatality.new(Window: Window)
 		Toggle = true,
 		Signal = Instance.new('BindableEvent');
 	};
+	
+	Fatal.Notifier = Fatality.__NOTIFIER_CACHE or Fatality:CreateNotifier();
 
 	local Fatalitywin = Instance.new("ScreenGui")
 	local FatalFrame = Instance.new("Frame")
@@ -3322,7 +4165,9 @@ function Fatality.new(Window: Window)
 	local InfoButton = Instance.new("ImageButton")
 	local SearchButton = Instance.new("ImageButton")
 	local SaveButton = Instance.new("ImageButton")
-
+	
+	Fatality.WindowFlags[Fatalitywin] = {};
+	
 	Fatality:ScrollSignal(tbc,UIListLayout,'X');
 
 	FatalFrame:GetPropertyChangedSignal("BackgroundTransparency"):Connect(function()
@@ -3373,8 +4218,6 @@ function Fatality.new(Window: Window)
 			Fatality:CreateAnimation(HeaderLineShadow_2,0.5,{
 				BackgroundTransparency = 0.5,
 			})
-
-			--Fatalitywin.Enabled = true;
 
 			Fatality:CreateAnimation(InfoButton,0.25,{
 				ImageTransparency = 0.5
@@ -3432,8 +4275,6 @@ function Fatality.new(Window: Window)
 			for i,v in next , Fatal.Menus do
 				v.ValueSelect(false);
 			end;
-
-			--Fatalitywin.Enabled = false;
 
 			Fatality:CreateAnimation(SaveButton,0.35,{
 				Position = UDim2.new(0,35,1, 20)
@@ -3757,7 +4598,7 @@ function Fatality.new(Window: Window)
 	UICorner_6.CornerRadius = UDim.new(0, 5)
 	UICorner_6.Parent = HeaderLineShadow_2
 
-	Fatality:Drag(Header,FatalFrame,0.1);
+	Fatality:Drag(FatalFrame,FatalFrame,0.1);
 
 	UserInputService.InputBegan:Connect(function(input,istyping)
 		if not istyping then
@@ -3768,17 +4609,146 @@ function Fatality.new(Window: Window)
 			end;
 		end
 	end)
-	
+
 	function Fatal:SetUsername(name: string)
 		User_name.Text = name or Client.DisplayName;
 	end;
-	
+
 	function Fatal:SetProfile(icon: string)
 		UserIcon.Image = icon or Players:GetUserThumbnailAsync(Client.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size180x180);
 	end;
 
 	function Fatal:SetExpire(str: string)
 		expire_days.Text = string.format("<font transparency=\"0.5\">expires:</font> <font color=\"#f53174\">%s</font>",str)
+	end;
+	
+	function Fatal:GetFlags()
+		return Fatality.WindowFlags[Fatalitywin];
+	end;
+	
+	function Fatal:AddConfig()
+		local ConfigButton = Instance.new("ImageButton")
+
+		ConfigButton.Name = "ConfigButton"
+		ConfigButton.Parent = Bottom;
+		ConfigButton.AnchorPoint = Vector2.new(0, 0.5)
+		ConfigButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		ConfigButton.BackgroundTransparency = 1.000
+		ConfigButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		ConfigButton.BorderSizePixel = 0
+		ConfigButton.Position = UDim2.new(0, 57, 0.5, 0)
+		ConfigButton.Size = UDim2.new(0, 16, 0, 16)
+		ConfigButton.ZIndex = 4
+		ConfigButton.Image = "rbxassetid://10723387721"
+		ConfigButton.ImageTransparency = 0.500;
+		
+		Fatality:CreateHover(ConfigButton,function(bool)
+			if bool then
+				Fatality:CreateAnimation(ConfigButton,0.3,{
+					ImageTransparency = 0.2500;
+				})
+			else
+				Fatality:CreateAnimation(ConfigButton,0.3,{
+					ImageTransparency = 0.500;
+				})
+			end;
+		end);
+		
+		return Fatality:CreateConfigWindow(Fatalitywin,Fatal,ConfigButton);
+	end;
+	
+	function Fatal:LoadConfig(config)
+
+		for i,v in next , config do
+			if i ~= "Info" then
+				local Element = Fatality.WindowFlags[Fatalitywin][i];
+				
+				if Element then
+
+					local Value = v.Value;
+					local MainValue;
+					
+					task.spawn(function()
+						if Value.Type == "String" then
+							Element:SetValue(tostring(Value.Value));
+						elseif Value.Type == "Boolean" then
+							Element:SetValue((typeof(Value.Value) == 'boolean' and Value.Value) or (Value.Value == "true" and true or false));
+						elseif Value.Type == "Number" then
+							Element:SetValue(Value.Value);
+						elseif Value.Type == "Color3" then
+							Element:SetValue(Color3.new(Value.Value.R,Value.Value.G,Value.Value.B) , Value.Value.Transparency);
+						elseif Value.Type == "Table" then
+							Element:SetValue(Value.Value);
+							
+						end;
+					end);
+				end;
+				
+			end;
+		end;
+	end;
+	
+	function Fatal:GetFlagConfig()
+		local Flags = Fatal:GetFlags();
+		
+		local ConfigElement = {};
+		
+		for i,v in next , Flags do
+			local ValueData = {};
+			local Value = v:GetValue();
+			
+			if typeof(Value) == "string" then
+				ValueData.Type = "String";
+				ValueData.Value = Value;
+			elseif typeof(Value) == "boolean" then
+				ValueData.Type = "Boolean";
+				ValueData.Value = Value;
+			elseif typeof(Value) == "number" then
+				ValueData.Type = "Number";
+				ValueData.Value = Value;
+			elseif typeof(Value) == "Color3" then
+				ValueData.Type = "Color3";
+				
+				local Color = Value.Color;
+				local Transparency = Value.Transparency;
+				
+				ValueData.Value = {
+					R = Color.R,
+					G = Color.G,
+					B = Color.B,
+					
+					Transparency = Transparency
+				};
+			elseif typeof(Value) == "table" then
+				if Value.Color and Value.Transparency then
+					ValueData.Type = "Color3";
+
+					local Color = Value.Color;
+					local Transparency = Value.Transparency;
+
+					ValueData.Value = {
+						R = Color.R,
+						G = Color.G,
+						B = Color.B,
+  
+						Transparency = Transparency
+					};
+				else
+					ValueData.Type = "Table";
+					ValueData.Value = Value;
+				end;
+			else
+				ValueData.Type = "Unknow";
+				ValueData.Value = nil;
+			end;
+			
+			rawset(ConfigElement,i,{
+				FlagId = v.Flag,
+				Value = ValueData,
+			})
+		end;
+		
+		return ConfigElement;
 	end;
 
 	function Fatal:AddMenu(Menu : Menu)
@@ -3821,7 +4791,7 @@ function Fatality.new(Window: Window)
 		Icon.SizeConstraint = Enum.SizeConstraint.RelativeYY
 		Icon.ZIndex = 5
 		Icon.Image = Fatality:GetIcon(Menu.Icon);
-		Icon.ImageColor3 = Color3.fromRGB(255, 106, 133)
+		Icon.ImageColor3 = Fatality.Colors.Main
 		Icon.ScaleType = Enum.ScaleType.Crop
 
 		UICorner_2.CornerRadius = UDim.new(1, 0)
@@ -4005,7 +4975,7 @@ function Fatality.new(Window: Window)
 
 				Fatality:CreateAnimation(Icon,0.5,{
 					ImageTransparency = 0.15,
-					ImageColor3 = Color3.fromRGB(255, 106, 133)
+					ImageColor3 = Fatality.Colors.Main
 				});
 
 				Fatality:CreateAnimation(menu_name,0.5,{
@@ -4140,7 +5110,9 @@ function Fatality.new(Window: Window)
 			ListBox.Size = UDim2.new(1, 0, 0, 350)
 			ListBox.ZIndex = 10
 			ListBox.ClipsDescendants = true;
-
+			
+			Fatality:AddDragBlacklist(ScrollingFrame);
+			
 			Elements.Name = Fatality:RandomString()
 			Elements.Parent = ListBox
 			Elements.AnchorPoint = Vector2.new(0.5, 1)
@@ -4160,7 +5132,7 @@ function Fatality.new(Window: Window)
 
 			SearchBox.Name = Fatality:RandomString()
 			SearchBox.Parent = Elements
-			SearchBox.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+			SearchBox.BackgroundColor3 = Fatality.Colors.Black
 			SearchBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			SearchBox.BorderSizePixel = 0
 			SearchBox.ClipsDescendants = true
@@ -4169,7 +5141,7 @@ function Fatality.new(Window: Window)
 			SearchBox.ZIndex = 10
 
 			TextBox.Parent = SearchBox
-			TextBox.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+			TextBox.BackgroundColor3 = Fatality.Colors.Black
 			TextBox.BackgroundTransparency = 1.000
 			TextBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			TextBox.BorderSizePixel = 0
@@ -4209,7 +5181,7 @@ function Fatality.new(Window: Window)
 			ScrollingFrame.Parent = Elements
 			ScrollingFrame.Active = true
 			ScrollingFrame.AnchorPoint = Vector2.new(0.5, 0)
-			ScrollingFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+			ScrollingFrame.BackgroundColor3 = Fatality.Colors.Black
 			ScrollingFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			ScrollingFrame.BorderSizePixel = 0
 			ScrollingFrame.Position = UDim2.new(0.5, 0, 0, 40)
@@ -4276,7 +5248,7 @@ function Fatality.new(Window: Window)
 				db_selected.Size = UDim2.new(1, 0, 0, 10)
 				db_selected.ZIndex = 15
 				db_selected.FontFace = Fatality.FontSemiBold
-				db_selected.TextColor3 = Color3.fromRGB(255, 106, 133)
+				db_selected.TextColor3 = Fatality.Colors.Main
 				db_selected.TextSize = 12.000
 				db_selected.TextTransparency = 0.5;
 				db_selected.TextXAlignment = Enum.TextXAlignment.Left
@@ -4415,7 +5387,8 @@ function Fatality.new(Window: Window)
 				end)
 			end);
 
-			local res = Fatality:CreateResponse({
+			local res;
+			res = Fatality:CreateResponse({
 				Refresh = function()
 					for i,v in next , ScrollingFrame:GetChildren() do
 						if v:IsA('TextButton') then
@@ -4435,7 +5408,7 @@ function Fatality.new(Window: Window)
 						if Config.Multi then
 							if (typeof(Config.Default) == 'table' and (Config.Default[v] or table.find(Config.Default,v))) or Config.Default == v then
 								Config.Default[v] = true
-								bth.TextColor3 = Color3.fromRGB(255, 106, 133);
+								bth.TextColor3 = Fatality.Colors.Main;
 								bth.TextTransparency = 0;
 
 							else
@@ -4463,7 +5436,7 @@ function Fatality.new(Window: Window)
 								Config.Default[v] = not Config.Default[v];
 
 								if Config.Default[v] then
-									bth.TextColor3 = Color3.fromRGB(255, 106, 133);
+									bth.TextColor3 = Fatality.Colors.Main;
 									bth.TextTransparency = 0;
 
 								else
@@ -4478,7 +5451,7 @@ function Fatality.new(Window: Window)
 								selectedmem = bth;
 								Config.Default = v;
 
-								bth.TextColor3 = Color3.fromRGB(255, 106, 133);
+								bth.TextColor3 = Fatality.Colors.Main;
 								bth.TextTransparency = 0;
 
 							else
@@ -4507,7 +5480,7 @@ function Fatality.new(Window: Window)
 								end;
 
 								bth.TextTransparency = 0;
-								bth.TextColor3 = Color3.fromRGB(255, 106, 133);
+								bth.TextColor3 = Fatality.Colors.Main;
 								selectedmem = bth;
 								Config.Default = v;
 
@@ -4520,14 +5493,32 @@ function Fatality.new(Window: Window)
 				end,
 				SetValues = function(value)
 					Config.Values = value;
+					
 				end,
 				SetDefault = function(value)
 					Config.Default = value;
 				end,
+				GetValue = function()
+					return Config.Default;
+				end,
+				Flag = Config.Flag and Config.Flag.."ListBox",
+				SetValue = function(a)
+
+					Config.Default = a;
+					
+					res:Refresh();
+					
+					Config.Callback(Config.Default);
+				end,
+				
 				Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
 			});
 
 			res:Refresh();
+			
+			if Config.Flag then
+				Fatality.WindowFlags[Fatalitywin][Config.Flag.."ListBox"] = res;
+			end;
 
 			return res;
 		end;
@@ -4750,7 +5741,9 @@ function Fatality.new(Window: Window)
 		local ScrollingFrame = Instance.new("ScrollingFrame")
 		local UIListLayout = Instance.new("UIListLayout")
 		local searchScale = UDim2.new(0, 295, 0, 295);
-
+		
+		Fatality:AddDragBlacklist(SearchFrame);
+		
 		local SearchToggle = function(value)
 			if value then
 				SearchFrame.Position = UDim2.fromOffset(SearchButton.AbsolutePosition.X - 5,SearchButton.AbsolutePosition.Y + (SearchButton.AbsoluteSize.Y * 3))
@@ -4854,7 +5847,7 @@ function Fatality.new(Window: Window)
 		SearchBox.Name = Fatality:RandomString()
 		SearchBox.Parent = SearchFrame
 		SearchBox.AnchorPoint = Vector2.new(0.5, 0)
-		SearchBox.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+		SearchBox.BackgroundColor3 = Fatality.Colors.Black
 		SearchBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		SearchBox.BorderSizePixel = 0
 		SearchBox.Position = UDim2.new(0.5, 0, 0, 9)
@@ -4930,7 +5923,7 @@ function Fatality.new(Window: Window)
 
 			ResultFrame.Name = Fatality:RandomString()
 			ResultFrame.Parent = ScrollingFrame;
-			ResultFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
+			ResultFrame.BackgroundColor3 = Fatality.Colors.Black
 			ResultFrame.BackgroundTransparency = 1.000
 			ResultFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			ResultFrame.BorderSizePixel = 0
@@ -5190,7 +6183,7 @@ function Fatality.new(Window: Window)
 
 		backpack.MouseEnter:Connect(function()
 			Fatality:CreateAnimation(backpack,0.3,nil,{
-				BackgroundColor3 = Color3.fromRGB(255, 106, 133),
+				BackgroundColor3 = Fatality.Colors.Main,
 				BackgroundTransparency = 0.85
 			})
 		end)
@@ -5435,6 +6428,8 @@ function Fatality:Loader(Config: Loader)
 end;
 
 function Fatality:CreateNotifier(): Notifier
+	if Fatality.__NOTIFIER_CACHE then return Fatality.__NOTIFIER_CACHE; end;
+	
 	local Notify = Instance.new("ScreenGui")
 	local layout = Instance.new("Frame")
 	local UIListLayout = Instance.new("UIListLayout")
@@ -5458,8 +6453,8 @@ function Fatality:CreateNotifier(): Notifier
 	UIListLayout.Parent = layout
 	UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-	return Fatality:CreateResponse({
+	
+	local res = Fatality:CreateResponse({
 		Notify = function(Config: Notify)
 			Config = Config or {}
 			Config.Icon = Config.Icon or "settings";
@@ -5487,10 +6482,10 @@ function Fatality:CreateNotifier(): Notifier
 			notify_block.Parent = notify
 			notify_block.AnchorPoint = Vector2.new(0.5, 0)
 			notify_block.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
-			notify_block.BackgroundTransparency = 0.1
+			notify_block.BackgroundTransparency = 1
 			notify_block.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			notify_block.BorderSizePixel = 0
-			notify_block.Position = UDim2.new(2, 100, 0, 0)
+			notify_block.Position = UDim2.new(0.5, 0, -1, 0)
 			notify_block.Size = UDim2.new(1, 0, 1, -12)
 			notify_block.ClipsDescendants = true
 			notify_block.ZIndex = 54
@@ -5498,20 +6493,21 @@ function Fatality:CreateNotifier(): Notifier
 			UICorner.CornerRadius = UDim.new(0, 3)
 			UICorner.Parent = notify_block
 
-			UIStroke.Thickness = 2.500
-			UIStroke.Transparency = 0.900
+			UIStroke.Thickness = 1
+			UIStroke.Transparency = 1
 			UIStroke.Parent = notify_block
 
 			Icon.Name = Fatality:RandomString()
 			Icon.Parent = notify_block
-			Icon.BackgroundColor3 = Color3.fromRGB(255, 106, 133)
+			Icon.BackgroundColor3 = Fatality.Colors.Main
 			Icon.BackgroundTransparency = 1.000
 			Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			Icon.BorderSizePixel = 0
 			Icon.Position = UDim2.new(0, 7, 0, 7)
 			Icon.Size = UDim2.new(0, 18, 0, 18)
 			Icon.Image = Fatality:GetIcon(Config.Icon);
-			Icon.ImageColor3 = Color3.fromRGB(255, 106, 133)
+			Icon.ImageColor3 = Fatality.Colors.Main
+			Icon.ImageTransparency = 1
 			Icon.ZIndex = 55
 
 			HeaderText.Name = Fatality:RandomString()
@@ -5525,9 +6521,9 @@ function Fatality:CreateNotifier(): Notifier
 			HeaderText.ZIndex = 55
 			HeaderText.FontFace = Fatality.FontSemiBold
 			HeaderText.Text = Config.Title
-			HeaderText.TextColor3 = Color3.fromRGB(255, 106, 133)
+			HeaderText.TextColor3 = Fatality.Colors.Main
 			HeaderText.TextSize = 13.000
-			HeaderText.TextTransparency = 0.200
+			HeaderText.TextTransparency = 1
 			HeaderText.TextXAlignment = Enum.TextXAlignment.Left
 
 			BodyText.Name = Fatality:RandomString()
@@ -5544,7 +6540,7 @@ function Fatality:CreateNotifier(): Notifier
 			BodyText.Text = Config.Content or "";
 			BodyText.TextColor3 = Color3.fromRGB(255, 255, 255)
 			BodyText.TextSize = 12.000
-			BodyText.TextTransparency = 0.300
+			BodyText.TextTransparency = 1
 			BodyText.TextWrapped = true
 			BodyText.TextXAlignment = Enum.TextXAlignment.Left
 			BodyText.TextYAlignment = Enum.TextYAlignment.Top
@@ -5555,30 +6551,66 @@ function Fatality:CreateNotifier(): Notifier
 
 				local XScale = (TitleScale.X > ContentScale.X and TitleScale.X) or ContentScale.X;
 				local YScale = (TitleScale.Y > ContentScale.Y and TitleScale.Y) or ContentScale.Y;
-
-				Fatality:CreateAnimation(notify,0.25,{
-					Size = UDim2.new(0, 0, 0, YScale + 50)
+				
+				notify.Size = UDim2.new(0, XScale + 25, 0, YScale + 50);
+				
+				Fatality:CreateAnimation(notify_block,0.35,{
+					Position = UDim2.new(0.5, 0, 0, 0)
+				});
+			end;
+			
+			task.delay(0.1,function()
+				Fatality:CreateAnimation(notify_block,0.25,{
+					BackgroundTransparency = 0.1
 				})
 
-				task.delay(0.25,function()
-					Fatality:CreateAnimation(notify,0.15,{
-						Size = UDim2.new(0, XScale + 25, 0, YScale + 50)
-					})
+				Fatality:CreateAnimation(UIStroke,0.25,{
+					Thickness = 2.500,
+					Transparency = 0.900
+				})
 
-					Fatality:CreateAnimation(notify_block,0.5,{
-						Position = UDim2.new(0.5, 0, 0, 0)
-					})
-				end);
-			end;
+				Fatality:CreateAnimation(Icon,0.25,{
+					ImageTransparency = 0
+				})
 
+				Fatality:CreateAnimation(HeaderText,0.25,{
+					TextTransparency = 0.200
+				})
+
+				Fatality:CreateAnimation(BodyText,0.25,{
+					TextTransparency = 0.3
+				})
+			end);
+			
 			updateScale();
 
 			task.delay(Config.Duration + 0.25,function()
-				Fatality:CreateAnimation(notify_block,0.5,{
-					Position = UDim2.new(2, 100, 0, 0)
+				Fatality:CreateAnimation(notify_block,0.35,{
+					Position = UDim2.new(0.5, 0, 1, 0)
+				})
+				
+				Fatality:CreateAnimation(notify_block,0.25,{
+					BackgroundTransparency = 1
+				})
+				
+				Fatality:CreateAnimation(UIStroke,0.25,{
+					Thickness = 1,
+					Transparency = 1
+				})
+				
+				Fatality:CreateAnimation(Icon,0.25,{
+					ImageTransparency = 1
+				})
+				
+				Fatality:CreateAnimation(HeaderText,0.25,{
+					TextTransparency = 1
+				})
+				
+				Fatality:CreateAnimation(BodyText,0.25,{
+					TextTransparency = 1
 				})
 
-				task.delay(0.65,function()
+				task.delay(0.35,function()
 					Fatality:CreateAnimation(notify,0.5,{
 						Size = UDim2.new(0,0,0,0)
 					})
@@ -5590,6 +6622,10 @@ function Fatality:CreateNotifier(): Notifier
 			end)
 		end,
 	});
+	
+	Fatality.__NOTIFIER_CACHE = res;
+	
+	return res;
 end;
 
 Fatality.FATALITY_PID = Fatality:RandomString();
