@@ -63,6 +63,11 @@ export type Elements = {
 	},
 }
 
+export type Preview = {
+	Position: string,
+	Height: number
+}
+
 export type Toggle = {
 	Name: string,
 	Default: boolean,
@@ -2082,13 +2087,13 @@ function Fatality:AddDragBlacklist(Frame: Frame)
 	Frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseMovement then
 			local finder = table.find(Fatality.DragBlacklist , Frame);
-			
+
 			if not finder then
 				table.insert(Fatality.DragBlacklist , Frame);
 			end;
 		end;
 	end);
-	
+
 	Frame.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseMovement then
 			local finder = table.find(Fatality.DragBlacklist , Frame);
@@ -3296,7 +3301,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 		return Respons;
 	end;
-
+	
 	function elements:AddKeybind(Config: Keybind)
 		Config = Config or {};
 		Config.Name = Config.Name or "Keybind";
@@ -4285,7 +4290,7 @@ function Fatality.new(Window: Window)
 			})
 		else
 			table.clear(Fatality.DragBlacklist);
-			
+
 			for i,v in next , Fatal.Menus do
 				v.ValueSelect(false);
 			end;
@@ -5082,6 +5087,124 @@ function Fatality.new(Window: Window)
 				end;
 			end;
 		end);
+		
+		function MenuLib:AddPreview(Config: Preview)
+			Config = Config or {};
+			Config.Name = Config.Name or "PREVIEW";
+			Config.Position = Config.Position or "left";
+			Config.Height = Config.Height or 0;
+			
+			local Preview = Instance.new("Frame")
+			local PreviewName = Instance.new("TextLabel")
+			local Main = Instance.new("Frame")
+			local UIStroke = Instance.new("UIStroke")
+			local UICorner = Instance.new("UICorner")
+			local MainBlock = Instance.new("Frame")
+
+			Preview.Name = "Preview"
+			Preview.Parent = (string.lower(Config.Position) == 'left' and Left) or (string.lower(Config.Position) == 'center' and Center) or Right;
+			Preview.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
+			Preview.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			Preview.BorderSizePixel = 0
+			Preview.ClipsDescendants = true
+			Preview.ZIndex = 15;
+			Preview.Size = UDim2.new(1, 0, 0, 25 + Config.Height)
+	
+			PreviewName.Name = "PreviewName"
+			PreviewName.Parent = Preview
+			PreviewName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			PreviewName.BackgroundTransparency = 1.000
+			PreviewName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			PreviewName.BorderSizePixel = 0
+			PreviewName.Position = UDim2.new(0, 10, 0, 0)
+			PreviewName.Size = UDim2.new(1, 0, 0, 15)
+			PreviewName.ZIndex = 19
+			PreviewName.FontFace = Fatality.FontSemiBold
+			PreviewName.Text = Config.Name
+			PreviewName.TextColor3 = Color3.fromRGB(255, 255, 255)
+			PreviewName.TextSize = 15.000
+			PreviewName.TextStrokeTransparency = 0.750
+			PreviewName.TextXAlignment = Enum.TextXAlignment.Left
+
+			Main.Name = "Main"
+			Main.Parent = Preview
+			Main.AnchorPoint = Vector2.new(0.5, 1)
+			Main.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+			Main.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			Main.BorderSizePixel = 0
+			Main.Position = UDim2.new(0.5, 0, 1, -1)
+			Main.Size = UDim2.new(1, -5, 1, -10)
+			Main.ZIndex = 17
+
+			UIStroke.Color = Color3.fromRGB(29, 29, 29)
+			UIStroke.Parent = Main
+
+			UICorner.CornerRadius = UDim.new(0, 2)
+			UICorner.Parent = Main
+
+			MainBlock.Name = "MainBlock"
+			MainBlock.Parent = Main
+			MainBlock.AnchorPoint = Vector2.new(0.5, 0.5)
+			MainBlock.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			MainBlock.BackgroundTransparency = 1.000
+			MainBlock.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			MainBlock.BorderSizePixel = 0
+			MainBlock.Position = UDim2.new(0.5, 0, 0.5, 0)
+			MainBlock.Size = UDim2.new(1, -5, 1, -5)
+			MainBlock.ZIndex = 18
+			
+			local Toggle = function(v)
+				if v then
+					Fatality:CreateAnimation(Preview,0.5,{
+						BackgroundTransparency = 0
+					})
+
+					Fatality:CreateAnimation(PreviewName,0.5,{
+						TextStrokeTransparency = 0.750,
+						TextTransparency = 0
+					})
+					
+					Fatality:CreateAnimation(Main,0.5,{
+						BackgroundTransparency = 0
+					})
+					
+					Fatality:CreateAnimation(UIStroke,0.5,{
+						Transparency = 0
+					})
+					
+					Fatality:CreateAnimation(MainBlock,0.5,{
+						Size = UDim2.new(1, -5, 1, -5)
+					})
+				else
+					Fatality:CreateAnimation(Preview,0.5,{
+						BackgroundTransparency = 1
+					})
+
+					Fatality:CreateAnimation(PreviewName,0.5,{
+						TextStrokeTransparency = 1,
+						TextTransparency = 1
+					})
+
+					Fatality:CreateAnimation(Main,0.5,{
+						BackgroundTransparency = 1
+					})
+
+					Fatality:CreateAnimation(UIStroke,0.5,{
+						Transparency = 1
+					})
+
+					Fatality:CreateAnimation(MainBlock,0.5,{
+						Size = UDim2.new(0,0,0,0)
+					})
+				end
+			end;
+
+			Toggle(BindEvent:GetAttribute('V'));
+
+			BindEvent.Event:Connect(Toggle);
+			
+			return MainBlock;
+		end;
 
 		function MenuLib:AddListBox(Config : Listbox)
 			Config = Config or {};
